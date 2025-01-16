@@ -1,3 +1,7 @@
+## Project Ignore List ##
+**/config/secrets.env
+
+## Default Ignore List ##
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
