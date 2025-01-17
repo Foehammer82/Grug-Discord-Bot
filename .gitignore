@@ -1,7 +1,7 @@
 ## Project Ignore List ##
 # Data Files
-**/data/vector_store_data/*
-!**/data/vector_store_data/.gitkeep
+**/data/vector_store_documents/*
+!**/data/vector_store_documents/.gitkeep
 
 **/config/secrets.env
 
