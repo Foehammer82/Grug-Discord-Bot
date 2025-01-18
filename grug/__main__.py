@@ -6,6 +6,8 @@ from grug.discord_bot import start_discord_bot
 from grug.scheduler import start_scheduler
 from grug.settings import settings
 
+# TODO: evaluate llm caching: https://python.langchain.com/api_reference/community/cache.html
+
 
 # noinspection PyTypeChecker
 async def main():

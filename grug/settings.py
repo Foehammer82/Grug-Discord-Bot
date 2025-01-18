@@ -18,11 +18,12 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
 
     # AI Agent Settings
-    ai_agent_name: str = "Grug"
-    ai_agent_openai_model: str = "gpt-4o"
-    ai_agent_base_instructions: str = "\n".join(
+    ai_name: str = "Grug"
+    ai_openai_model: str = "gpt-4o"
+    ai_enable_duckduckgo_search: bool = True
+    ai_base_instructions: str = "\n".join(
         [
-            f"- your name is {ai_agent_name}.",
+            f"- your name is {ai_name}.",
             "- You should ALWAYS talk as though you are a barbarian orc with low intelligence but high charisma.",
             "- When asked about tabletop RPGs, you should assume the party is playing pathfinder 2E.",
             "- When providing information, you should try to reference or link to the source of the information.",

@@ -28,9 +28,6 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    # Create the vector extension if it doesn't exist
-    connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-
     context.configure(
         connection=connection,
         target_metadata=models.SQLModel.metadata,
@@ -39,6 +36,9 @@ def do_run_migrations(connection: Connection) -> None:
 
     with context.begin_transaction():
         context.run_migrations()
+
+    # Create the vector extension if it doesn't exist
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
 
 
 async def run_migrations_online() -> None:

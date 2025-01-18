@@ -1,12 +1,8 @@
 """Discord bot interface for the Grug assistant server."""
 
-import asyncio
-import sys
-
 import discord
 import discord.utils
 from discord import app_commands
-from langchain.embeddings import init_embeddings
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -131,24 +127,7 @@ async def on_message(message: discord.Message):
 
 
 async def start_discord_bot():
-    # Windows requires the use of the WindowsSelectorEventLoopPolicy
-    # NOTE: https://youtrack.jetbrains.com/issue/PY-57667/Asyncio-support-for-the-debugger-EXPERIMENTAL-FEATURE
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-    # TODO: look into making sure this is a TTL or scheduled culling of data on memory so that the db doesn't grow too
-    #       big.
-
-    async with AsyncPostgresStore.from_conn_string(
-        settings.postgres_dsn.replace("+psycopg", ""),
-        index={
-            "embed": init_embeddings(
-                model="openai:text-embedding-3-small",
-                api_key=settings.openai_api_key.get_secret_value(),
-            ),
-            "dims": 1536,
-        },
-    ) as store:
+    async with AsyncPostgresStore.from_conn_string(settings.postgres_dsn.replace("+psycopg", "")) as store:
         await store.setup()
 
         async with AsyncPostgresSaver.from_conn_string(settings.postgres_dsn.replace("+psycopg", "")) as checkpointer:
@@ -156,7 +135,7 @@ async def start_discord_bot():
 
             discord_client.ai_agent = create_react_agent(
                 model=ChatOpenAI(
-                    model=settings.ai_agent_openai_model,
+                    model=settings.ai_openai_model,
                     temperature=0,
                     max_tokens=None,
                     timeout=None,
@@ -166,7 +145,7 @@ async def start_discord_bot():
                 tools=all_ai_tools,
                 checkpointer=checkpointer,
                 store=store,
-                state_modifier=settings.ai_agent_base_instructions,
+                state_modifier=settings.ai_base_instructions,
             )
 
             await discord_client.start(settings.discord_token.get_secret_value())

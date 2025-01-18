@@ -24,6 +24,7 @@ dependencies = [
     "sqlmodel>=0.0.22",
     "asyncpg>=0.30.0",
     "langgraph-checkpoint-postgres>=2.0.13",
+    "duckduckgo-search>=7.2.1",
 ]
 
 [dependency-groups]
