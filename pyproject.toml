@@ -1,0 +1,58 @@
+[project]
+name = "grug"
+version = "0.0.1"
+description = "A self-hostable tabletop-RPG GenAI bot"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic-postgresql-enum>=1.5.0",
+    "alembic>=1.14.0",
+    "anyio>=4.8.0",
+    "apscheduler~=4.0.0a1",
+    "discord-py[voice]>=2.4.0",
+    "grandalf>=0.8",
+    "langchain-community>=0.3.14",
+    "langchain-openai>=0.3.0",
+    "langgraph>=0.2.63",
+    "loguru>=0.7.3",
+    "pgvector>=0.3.6",
+    "psycopg[binary,pool]>=3.2.4",
+    "pydantic>=2.10.5",
+    "pydantic-settings>=2.7.1",
+    "pymupdf>=1.25.1",
+    "requests>=2.32.3",
+    "sqlmodel>=0.0.22",
+    "asyncpg>=0.30.0",
+    "langgraph-checkpoint-postgres>=2.0.13",
+]
+
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+    "pre-commit>=4.0.1",
+]
+test = [
+    "pytest-asyncio>=0.25.2",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests"
+]
+
+[tool.black]
+line-length = 120
+extend-exclude = '''
+/(
+  | alembic/versions
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
