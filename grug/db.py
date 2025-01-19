@@ -34,6 +34,6 @@ def init_db():
         text=True,
     )
     logger.info(result.stdout)
-    logger.error(result.stderr)
+    logger.info(result.stderr)
 
     logger.info("Database initialized [alembic upgrade head].")
