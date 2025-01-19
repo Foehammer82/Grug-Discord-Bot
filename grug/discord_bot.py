@@ -1,6 +1,6 @@
 """Discord bot interface for the Grug assistant server."""
 
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 
 import discord
 import discord.utils
@@ -17,7 +17,6 @@ from grug.ai_agents.should_respond_agent import EvaluationAgent
 from grug.ai_tools import all_ai_tools
 from grug.settings import settings
 from grug.utils import InterceptLogHandler, get_interaction_response
-
 
 # Why the `members` intent is necessary for the Grug Discord bot:
 #
@@ -100,7 +99,7 @@ async def on_ready():
 async def on_message(message: discord.Message):
     """on_message event handler for the Discord bot."""
 
-    # TODO: make a tool that an search chat history for a given channel
+    # TODO: make a tool that can search chat history for a given channel
 
     # ignore messages from self and all bots
     if message.author == discord_client.user or message.author.bot:
