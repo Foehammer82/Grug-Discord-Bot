@@ -1,5 +1,7 @@
 """Discord bot interface for the Grug assistant server."""
 
+from datetime import datetime, timedelta, UTC
+
 import discord
 import discord.utils
 from discord import app_commands
@@ -11,9 +13,11 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.store.postgres import AsyncPostgresStore
 from loguru import logger
 
+from grug.ai_agents.should_respond_agent import EvaluationAgent
 from grug.ai_tools import all_ai_tools
 from grug.settings import settings
 from grug.utils import InterceptLogHandler, get_interaction_response
+
 
 # Why the `members` intent is necessary for the Grug Discord bot:
 #
@@ -36,10 +40,12 @@ from grug.utils import InterceptLogHandler, get_interaction_response
 
 class Client(discord.Client):
     ai_agent: CompiledGraph = None
+    evaluation_agent = EvaluationAgent()
 
     def __init__(self):
         intents = discord.Intents.default()
         intents.members = True
+        intents.message_content = True
 
         super().__init__(intents=intents)
 
@@ -94,36 +100,64 @@ async def on_ready():
 async def on_message(message: discord.Message):
     """on_message event handler for the Discord bot."""
 
-    # TODO: working on figuring out how to pass all conversation history to the AI's memory so it can reference it
-    # TODO: when in group chats, have it check using a smaller model to see if it should respond to the current
-    #       conversation.
+    # TODO: make a tool that an search chat history for a given channel
 
     # ignore messages from self and all bots
     if message.author == discord_client.user or message.author.bot:
         return
 
-    # Message is @mention or DM
-    elif isinstance(message.channel, discord.DMChannel) or (
-        (isinstance(message.channel, discord.TextChannel) or isinstance(message.channel, discord.Thread))
-        and discord_client.user in message.mentions
-    ):
+    channel_is_text_or_thread = isinstance(message.channel, discord.TextChannel) or isinstance(
+        message.channel, discord.Thread
+    )
 
-        final_state = await discord_client.ai_agent.ainvoke(
-            {"messages": [HumanMessage(content=message.content)]},
-            config={
-                "configurable": {
-                    "thread_id": str(message.channel.id),
-                    "user_id": f"{str(message.guild.id) + '-' if message.guild else ''}{message.author.id}",
-                }
-            },
+    should_respond = False
+    if channel_is_text_or_thread and discord_client.user not in message.mentions:
+        # Evaluate the message to determine if the bot should respond
+        response_eval = await discord_client.evaluation_agent.evaluate_message(
+            message=message.content,
+            conversation_history=[
+                message.content
+                async for message in message.channel.history(after=datetime.now(tz=UTC) - timedelta(days=1))
+            ],
         )
+        logger.info(f"response_eval: {response_eval}")
 
-        await message.channel.send(final_state["messages"][-1].content)
-        # TODO: don't forget to also send the response messages to the chat history.  might be good to set a TTL on the
-        #       overall history so it doesn't get too big.
+        # Determine if the bot should respond based on the evaluation scores
+        should_respond = response_eval.relevance_score > 5 and response_eval.confidence_score > 5
 
-    # TODO: send chat messages to DB and build tools that can look back at chat history to to get summaries of what
-    #       was talked about
+    # Message is @mention or DM or should_respond is True
+    # TODO: might need a tool that will get the image from a url and provide it to the model for image evaluation
+    if (
+        isinstance(message.channel, discord.DMChannel)
+        or (channel_is_text_or_thread and discord_client.user in message.mentions)
+        or should_respond
+    ):
+        async with message.channel.typing():
+
+            ai_prompt = message.content
+
+            # Handle replies
+            message_replied_to: str | None = message.reference.resolved.content if message.reference else None
+            if message_replied_to:
+                ai_prompt = (
+                    f'The following message is a reply to "{message_replied_to}".  '
+                    f"the reply to that message is {message.content}, respond accordingly."
+                )
+
+            final_state = await discord_client.ai_agent.ainvoke(
+                {"messages": [HumanMessage(content=ai_prompt)]},
+                config={
+                    "configurable": {
+                        "thread_id": str(message.channel.id),
+                        "user_id": f"{str(message.guild.id) + '-' if message.guild else ''}{message.author.id}",
+                    }
+                },
+            )
+
+            await message.channel.send(
+                content=final_state["messages"][-1].content,
+                reference=message if channel_is_text_or_thread else None,
+            )
 
 
 async def start_discord_bot():
@@ -135,17 +169,18 @@ async def start_discord_bot():
 
             discord_client.ai_agent = create_react_agent(
                 model=ChatOpenAI(
-                    model=settings.ai_openai_model,
+                    model_name=settings.ai_openai_model,
                     temperature=0,
                     max_tokens=None,
-                    timeout=None,
                     max_retries=2,
-                    api_key=settings.openai_api_key.get_secret_value(),
+                    openai_api_key=settings.openai_api_key,
                 ),
                 tools=all_ai_tools,
                 checkpointer=checkpointer,
                 store=store,
                 state_modifier=settings.ai_base_instructions,
             )
+
+            discord_client.evaluation_agent = EvaluationAgent()
 
             await discord_client.start(settings.discord_token.get_secret_value())
