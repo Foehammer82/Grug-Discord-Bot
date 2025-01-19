@@ -36,6 +36,9 @@ async def generate_ai_image(prompt: str) -> dict[str, str | int] | None:
 
     # TODO: have it so you can make recommendations for image that was just output.
 
+    if not settings.ai_image_generation_enabled:
+        raise ValueError("AI image generation is disabled.")
+
     # Return None if the assistant is not available
     async with get_async_session() as session:
 

@@ -30,6 +30,7 @@ class Settings(BaseSettings):
             "- When providing links to images, make sure to format them as markdown links so the image shows up.",
         ]
     )
+    ai_image_generation_enabled: bool = True
     ai_image_daily_generation_limit: int | None = Field(
         default=25, description="The daily limit of image generations. If None, there is no limit."
     )
