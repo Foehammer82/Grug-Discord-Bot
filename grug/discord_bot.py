@@ -4,7 +4,8 @@ from datetime import UTC, datetime, timedelta
 
 import discord
 import discord.utils
-from discord import app_commands
+from discord import Member, VoiceState, app_commands
+from discord.ext import voice_recv
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -157,6 +158,49 @@ async def on_message(message: discord.Message):
                 content=final_state["messages"][-1].content,
                 reference=message if channel_is_text_or_thread else None,
             )
+
+
+voice_channel_dict = {}
+
+
+def callback(user, data: voice_recv.VoiceData):
+    logger.info(f"Got packet from {user}")
+
+    ## voice power level, how loud the user is speaking
+    # ext_data = packet.extension_data.get(voice_recv.ExtensionID.audio_power)
+    # value = int.from_bytes(ext_data, 'big')
+    # power = 127-(value & 127)
+    # print('#' * int(power * (79/128)))
+    ## instead of 79 you can use shutil.get_terminal_size().columns-1
+
+
+@discord_client.event
+async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+    if member.bot:
+        return
+
+    # If the user joined a voice channel
+    if before.channel is None and after.channel is not None:
+        logger.info(f"{member.display_name} joined {after.channel.name}")
+
+        # Connect the bot to the voice channel
+        if after.channel.id not in voice_channel_dict:
+            voice_client = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
+            voice_channel_dict[after.channel.id] = voice_client
+
+            voice_client.listen(voice_recv.BasicSink(callback))
+
+    # If the user left a voice channel
+    elif before.channel is not None and after.channel is None:
+        logger.info(f"{member.display_name} left {before.channel.name}")
+
+        # Disconnect the bot from the voice channel
+        if before.channel.id in voice_channel_dict:
+            await voice_channel_dict[before.channel.id].disconnect()
+
+    # If the user switched voice channels
+    elif before.channel != after.channel:
+        logger.info(f"{member.display_name} switched from {before.channel.name} to {after.channel.name}")
 
 
 async def start_discord_bot():

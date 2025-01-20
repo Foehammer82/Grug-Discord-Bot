@@ -354,6 +354,18 @@ wheels = [
 ]
 
 [[package]]
+name = "discord-ext-voice-recv"
+version = "0.4.2a145"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "discord-py", extra = ["voice"] },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/30/91/f285c69e120dd03bdece6291d0eaf8431aea4eb0925b48aaf0e25ecd3654/discord-ext-voice_recv-0.4.2a145.tar.gz", hash = "sha256:2e77d341976877a45ddbbe629e34b6eca5cd9ba9ec5f3f372281dfea116f65a4", size = 40791 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/83/23/0e2fe65123487ca2678b61e324693874ab6034b09248779b891c46313408/discord_ext_voice_recv-0.4.2a145-py3-none-any.whl", hash = "sha256:a17d5a5bda144b70f089391bb176742836c346438125efcbe08b7b067f6b7d0a", size = 43628 },
+]
+
+[[package]]
 name = "discord-py"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -505,6 +517,7 @@ dependencies = [
     { name = "anyio" },
     { name = "apscheduler" },
     { name = "asyncpg" },
+    { name = "discord-ext-voice-recv" },
     { name = "discord-py", extra = ["voice"] },
     { name = "duckduckgo-search" },
     { name = "grandalf" },
@@ -540,6 +553,7 @@ requires-dist = [
     { name = "anyio", specifier = ">=4.8.0" },
     { name = "apscheduler", specifier = "~=4.0.0a1" },
     { name = "asyncpg", specifier = ">=0.30.0" },
+    { name = "discord-ext-voice-recv", specifier = ">=0.4.2a145" },
     { name = "discord-py", extras = ["voice"], specifier = ">=2.4.0" },
     { name = "duckduckgo-search", specifier = ">=7.2.1" },
     { name = "grandalf", specifier = ">=0.8" },
