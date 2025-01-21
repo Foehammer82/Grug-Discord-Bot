@@ -31,7 +31,6 @@ class Settings(BaseSettings):
     # AI Agent Settings
     ai_name: str = "Grug"
     ai_openai_model: str = "gpt-4o"
-    ai_enable_duckduckgo_search: bool = False
     ai_base_instructions: str = "\n".join(
         [
             f"- your name is {ai_name}.",
