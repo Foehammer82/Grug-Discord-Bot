@@ -168,43 +168,37 @@ async def on_message(message: discord.Message):
             )
 
 
-# TODO: change this so it's stored in the DB
-voice_channel_dict = {}
-
-
 @discord_client.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+    # TODO: store this in the DB so that it can be configured for each server
+    bot_voice_channel_id = 1049728769541283883
+
     # Ignore bot users
     if member.bot:
         return
 
-    # If the user joined a voice channel
-    if after.channel is not None:
+    # TODO: make sure to send a message to all users that join a bot voice channel what the bot is doing and how their
+    #       data is being handled
+
+    # If the user joined the bot voice channel
+    if after.channel is not None and after.channel.id == bot_voice_channel_id and before.channel is None:
         logger.info(f"{member.display_name} joined {after.channel.name}")
 
-        # TODO: need a better way to determine which voice channel the bot should be in, i think having it auto join
-        #       is the smoothest, but we need a way to configure that so that users can set which voice channel the bot
-        #       connects to by default.
-
-        # TODO: add tooling and store in DB for which voice channel the bot is assigned to be in.
-        #       since bots can only be in one voice channel at a time, we need to handle this accordingly.
         # If the bot is not currently in the voice channel, connect to the voice channel
-        if discord_client.user.id not in [member.id for member in after.channel.members]:
-            voice_channel_dict[after.channel.id] = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
-            voice_channel_dict[after.channel.id].listen(SpeechRecognitionSink(discord_channel=after.channel))
+        if discord_client.user not in after.channel.members:
+            logger.info(f"Connecting to {after.channel.name}")
+            voice_channel = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
+            voice_channel.listen(SpeechRecognitionSink(discord_channel=after.channel))
 
-    # If the user left a voice channel
-    elif before.channel is not None:
+    # If the user left the bot voice channel
+    elif before.channel.id == bot_voice_channel_id and before.channel is not None:
         logger.info(f"{member.display_name} left {before.channel.name}")
 
-        if len(before.channel.members) <= 1 and discord_client.user.id in [
-            member.id for member in before.channel.members
-        ]:
-            voice_client = voice_channel_dict.get(before.channel.id)
-            if voice_client:
-                await voice_client.disconnect()
-            else:
-                logger.warning(f"Voice client not found for channel {before.channel.id}")
+        # If there are no members in the voice channel and the bot is in the voice channel, disconnect from the voice
+        if len(before.channel.members) <= 1 and discord_client.user in before.channel.members:
+            logger.info(f"No members in {before.channel.name}, disconnecting...")
+            voice_channel = next((vc for vc in discord_client.voice_clients if vc.channel == before.channel), None)
+            await voice_channel.disconnect()
 
 
 async def start_discord_bot():
@@ -253,8 +247,8 @@ async def start_discord_bot():
         finally:
             # Disconnect from all voice channels
             logger.info("Disconnecting from all voice channels...")
-            for voice_client in voice_channel_dict.values():
-                await voice_client.disconnect()
+            for vc in discord_client.voice_clients:
+                await vc.disconnect()
 
             # Close the Discord client
             logger.info("Closing the Discord client...")
