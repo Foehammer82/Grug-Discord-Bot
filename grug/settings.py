@@ -18,6 +18,15 @@ class Settings(BaseSettings):
     discord_token: SecretStr | None = None
     openai_api_key: SecretStr | None = None
 
+    # Discord Settings
+    discord_bot_enable_contextual_responses: bool = Field(
+        default=True,
+        description=(
+            "This will enable the messaging bot to respond in group chats without being @mentioned.  It evaluates "
+            "the last message and chat history to determine if it should respond."
+        ),
+    )
+
     # AI Agent Settings
     ai_name: str = "Grug"
     ai_openai_model: str = "gpt-4o"

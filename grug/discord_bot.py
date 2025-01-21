@@ -1,6 +1,5 @@
 """Discord bot interface for the Grug assistant server."""
 
-import asyncio
 from datetime import UTC, datetime, timedelta
 
 import discord
@@ -24,6 +23,7 @@ from grug.ai_tools import all_ai_tools
 from grug.settings import settings
 from grug.utils import InterceptLogHandler, get_interaction_response
 
+# TODO: move these explanations to the docs and update the below comments to link to those docs
 # Why the `members` intent is necessary for the Grug Discord bot:
 #
 # The `members` intent in a Discord bot is used to receive events and information about guild members. This includes
@@ -41,6 +41,8 @@ from grug.utils import InterceptLogHandler, get_interaction_response
 #
 # Without the `members` intent, the bot would not be able to access detailed information about guild members, which
 # would significantly limit its functionality related to user and event management.
+
+# TODO: write out why the message_content intent is required (it's needed for the bot to make contextual responses)
 
 
 class Client(discord.Client):
@@ -97,9 +99,6 @@ async def on_ready():
     logger.info(f"Logged in as {discord_client.user} (ID: {discord_client.user.id})")
     logger.info(f"Discord bot invite URL: {get_bot_invite_url()}")
 
-    # TODO: Make sure all the guilds are loaded in the server (see old code)
-    # TODO: Add persistent views to the discord bot (see old code)
-
 
 @discord_client.event
 async def on_message(message: discord.Message):
@@ -116,7 +115,11 @@ async def on_message(message: discord.Message):
     )
 
     should_respond = False
-    if channel_is_text_or_thread and discord_client.user not in message.mentions:
+    if (
+        settings.discord_bot_enable_contextual_responses
+        and channel_is_text_or_thread
+        and discord_client.user not in message.mentions
+    ):
         # Evaluate the message to determine if the bot should respond
         response_eval = await discord_client.evaluation_agent.evaluate_message(
             message=message.content,
@@ -171,11 +174,6 @@ voice_channel_dict = {}
 
 @discord_client.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
-    # TODO: move these to settings
-    # configurable parameters
-    voice_channel_join_delay_seconds = 0.5
-    voice_channel_leave_delay_seconds = 0.5
-
     # Ignore bot users
     if member.bot:
         return
@@ -184,11 +182,14 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
     if after.channel is not None:
         logger.info(f"{member.display_name} joined {after.channel.name}")
 
+        # TODO: need a better way to determine which voice channel the bot should be in, i think having it auto join
+        #       is the smoothest, but we need a way to configure that so that users can set which voice channel the bot
+        #       connects to by default.
+
         # TODO: add tooling and store in DB for which voice channel the bot is assigned to be in.
         #       since bots can only be in one voice channel at a time, we need to handle this accordingly.
         # If the bot is not currently in the voice channel, connect to the voice channel
         if discord_client.user.id not in [member.id for member in after.channel.members]:
-            await asyncio.sleep(voice_channel_join_delay_seconds)
             voice_channel_dict[after.channel.id] = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
             voice_channel_dict[after.channel.id].listen(SpeechRecognitionSink(discord_channel=after.channel))
 
@@ -199,7 +200,6 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
         if len(before.channel.members) <= 1 and discord_client.user.id in [
             member.id for member in before.channel.members
         ]:
-            await asyncio.sleep(voice_channel_leave_delay_seconds)
             voice_client = voice_channel_dict.get(before.channel.id)
             if voice_client:
                 await voice_client.disconnect()

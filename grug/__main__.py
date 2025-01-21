@@ -1,3 +1,5 @@
+import contextlib
+
 import anyio
 from loguru import logger
 
@@ -29,7 +31,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
+    # Don't log the stack trace for a keyboard interrupt
+    with contextlib.suppress(KeyboardInterrupt):
         anyio.run(main)
-    except KeyboardInterrupt:
-        logger.info("Shutting down Grug...")
+
+    logger.info("Shutting down Grug...")

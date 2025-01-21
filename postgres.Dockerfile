@@ -5,8 +5,8 @@ ENV PGUSER=postgres
 
 RUN apk --no-cache add python3 pipx make gcc musl-dev clang19 llvm
 
+# docs: https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector
 RUN pipx run pgxnclient install vector
 
-# TODO: planned feature to utilze postgres as a message queue to offload data pipelining from within python
-#   - check it out: https://github.com/tembo-io/pgmq/tree/main/tembo-pgmq-python
-#RUN pipx run pgxnclient install pgmq
+# docs: https://github.com/tembo-io/pgmq?tab=readme-ov-file#postgres-message-queue-pgmq
+RUN pipx run pgxnclient install pgmq

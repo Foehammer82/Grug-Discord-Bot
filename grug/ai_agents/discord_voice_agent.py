@@ -14,7 +14,7 @@ from concurrent.futures import Future as CFuture
 from typing import Any, Awaitable, Callable, Final, Optional, Protocol, TypedDict, TypeVar
 
 import speech_recognition as sr  # type: ignore
-from discord import Member, User, VoiceChannel
+from discord import User, VoiceChannel
 from discord.ext.voice_recv import AudioSink, SilencePacket, VoiceData
 from loguru import logger
 from speech_recognition.recognizers.whisper_api import openai as sr_openai
@@ -83,7 +83,7 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
             # Get the text from the audio data
             text_output = None
             try:
-                text_output = sr_openai.recognize(_audio)
+                text_output = sr_openai.recognize(_recognizer, _audio)
             except sr.UnknownValueError:
                 logger.debug("Bad speech chunk")
 
@@ -102,25 +102,25 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
 
         return cb
 
-    @AudioSink.listener()
-    def on_voice_member_disconnect(self, member: Member, ssrc: Optional[int]) -> None:
-        self._drop(member.id)
+    # @AudioSink.listener()
+    # def on_voice_member_disconnect(self, member: Member, ssrc: Optional[int]) -> None:
+    #     self._drop(member.id)
 
     def cleanup(self) -> None:
         for user_id in tuple(self._stream_data.keys()):
             self._drop(user_id)
 
     def _drop(self, user_id: int) -> None:
-        data = self._stream_data.pop(user_id)
+        if user_id in self._stream_data:
+            data = self._stream_data.pop(user_id)
+            stopper = data.get("stopper")
+            if stopper:
+                stopper()
 
-        stopper = data.get("stopper")
-        if stopper:
-            stopper()
-
-        buffer = data.get("buffer")
-        if buffer:
-            # arrays don't have a clear function
-            del buffer[:]
+            buffer = data.get("buffer")
+            if buffer:
+                # arrays don't have a clear function
+                del buffer[:]
 
 
 class DiscordSRAudioSource(sr.AudioSource):

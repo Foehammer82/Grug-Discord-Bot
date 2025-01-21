@@ -37,6 +37,14 @@ def do_run_migrations(connection: Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+    # Create the vector extension if it doesn't exist
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    print("Created vector extension")
+
+    # create the PGMQ extension if it doesn't exist
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS pgmq"))
+    print("Created pgmq extension")
+
 
 async def run_migrations_online() -> None:
     async with async_engine.connect() as connection:
