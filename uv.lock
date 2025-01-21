@@ -575,6 +575,7 @@ dependencies = [
     { name = "requests" },
     { name = "speechrecognition", extra = ["openai"] },
     { name = "sqlmodel" },
+    { name = "tembo-pgmq-python" },
 ]
 
 [package.dev-dependencies]
@@ -612,6 +613,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "speechrecognition", extras = ["openai"], specifier = ">=3.14.0" },
     { name = "sqlmodel", specifier = ">=0.0.22" },
+    { name = "tembo-pgmq-python", specifier = ">=0.8.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1742,6 +1744,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/43/06/ce1bb165c1f111c7d23a1ad17204d67224baa69725bb6857a264db61beaf/standard_chunk-3.13.0.tar.gz", hash = "sha256:4ac345d37d7e686d2755e01836b8d98eda0d1a3ee90375e597ae43aaf064d654", size = 4672 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7a/90/a5c1084d87767d787a6caba615aa50dc587229646308d9420c960cb5e4c0/standard_chunk-3.13.0-py3-none-any.whl", hash = "sha256:17880a26c285189c644bd5bd8f8ed2bdb795d216e3293e6dbe55bbd848e2982c", size = 4944 },
+]
+
+[[package]]
+name = "tembo-pgmq-python"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "orjson" },
+    { name = "psycopg", extra = ["binary", "pool"] },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/22/4f/ebf3769345772fc3c3305367f46cbed525ed2a1315b1b7ba02cbf6c02377/tembo_pgmq_python-0.8.0.tar.gz", hash = "sha256:13e8511764f25a5680db74890f6f7d60e18a7e439881ac9353ebc6054aa1e426", size = 5026 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/cb/83200a7facbaaa9cc2d1dbc0228a63fd6f98b2c8aa326c80fbcf2b974efa/tembo_pgmq_python-0.8.0-py3-none-any.whl", hash = "sha256:72905b6d421f4a4394e97e0f116ec2fe5e2fc1c8c2f433ab5d5aa72c4a7c4cad", size = 5499 },
 ]
 
 [[package]]

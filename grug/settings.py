@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from loguru import logger
 from pydantic import Field, PostgresDsn, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
     @property
     def root_dir(self) -> Path:
         """Get the root directory of the project."""
+        logger.info(f"Root dir: {_ROOT_DIR}")
         return _ROOT_DIR
 
     @computed_field

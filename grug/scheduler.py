@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from grug.settings import settings
 
-# TODO: deprecated! as soon as ApScheduler releases next we can switch to psycopg for the event broker.
+# TODO: deprecated! as soon as ApScheduler releases past 4.0.0a5 we can switch to psycopg for the event broker.
 scheduler = AsyncScheduler(
     data_store=SQLAlchemyDataStore(
         engine_or_url=settings.postgres_dsn,

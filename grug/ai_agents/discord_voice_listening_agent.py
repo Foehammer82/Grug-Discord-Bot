@@ -18,6 +18,9 @@ from discord import User, VoiceChannel
 from discord.ext.voice_recv import AudioSink, SilencePacket, VoiceData
 from loguru import logger
 from speech_recognition.recognizers.whisper_api import openai as sr_openai
+from tembo_pgmq_python import PGMQueue
+
+from grug.settings import settings
 
 T = TypeVar("T")
 
@@ -40,15 +43,21 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
         lambda: _StreamData(stopper=None, recognizer=sr.Recognizer(), buffer=array.array("B"))
     )
 
-    def __init__(
-        self,
-        discord_channel: VoiceChannel,
-        *,
-        text_cb: Optional[SRTextCB] = None,
-    ):
+    def __init__(self, discord_channel: VoiceChannel):
         super().__init__(None)
         self.discord_channel: VoiceChannel = discord_channel
-        self.text_cb: Optional[SRTextCB] = text_cb
+
+        self.queue = PGMQueue(
+            host=settings.postgres_host,
+            port=settings.postgres_port,
+            username=settings.postgres_user,
+            password=settings.postgres_password.get_secret_value(),
+            database=settings.postgres_db,
+        )
+
+        # Create a queue for the voice channel if it doesn't exist
+        if str(discord_channel.id) not in self.queue.list_queues():
+            self.queue.create_queue(str(discord_channel.id))
 
     def _await(self, coro: Awaitable[T]) -> CFuture[T]:
         assert self.client is not None
@@ -73,8 +82,6 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
             )
 
     def background_listener(self, user: User):
-        text_cb = self.text_cb or self.get_default_text_callback()
-
         def callback(_recognizer: sr.Recognizer, _audio: sr.AudioData):
             # Don't process empty audio data or audio data that is too small
             if _audio.frame_data == b"" or len(bytes(_audio.frame_data)) < 10000:
@@ -87,24 +94,12 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
             except sr.UnknownValueError:
                 logger.debug("Bad speech chunk")
 
-            if text_output is not None:
-                text_cb(user, text_output)
-
-        return callback
-
-    @staticmethod
-    def get_default_text_callback() -> SRTextCB:
-        def cb(user: Optional[User], text: Optional[str]) -> Any:
             # WEIRDEST BUG EVER: for some reason whisper keeps getting the word "you" from the recognizer, so
             #                    we'll just ignore any text segments that are just "you"
-            if text.lower() != "you" if text else False:
-                logger.info(f"{user.display_name if user else "Someone"} said: {text}")
+            if text_output and text_output.lower() != "you":
+                self.queue.send(str(self.discord_channel.id), {"text": text_output})
 
-        return cb
-
-    # @AudioSink.listener()
-    # def on_voice_member_disconnect(self, member: Member, ssrc: Optional[int]) -> None:
-    #     self._drop(member.id)
+        return callback
 
     def cleanup(self) -> None:
         for user_id in tuple(self._stream_data.keys()):

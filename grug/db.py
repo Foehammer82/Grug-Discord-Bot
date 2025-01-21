@@ -29,7 +29,7 @@ def init_db():
     # Run the Alembic migrations
     result = subprocess.run(  # nosec B607, B603
         ["alembic", "upgrade", "head"],
-        cwd=settings.root_dir.as_posix(),
+        cwd=settings.root_dir.absolute(),
         capture_output=True,
         text=True,
     )

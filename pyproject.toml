@@ -27,6 +27,7 @@ dependencies = [
     "duckduckgo-search>=7.2.1",
     "discord-ext-voice-recv>=0.4.2a145",
     "speechrecognition[openai]>=3.14.0",
+    "tembo-pgmq-python>=0.8.0",
 ]
 
 [dependency-groups]

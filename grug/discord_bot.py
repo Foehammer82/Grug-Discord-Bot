@@ -17,7 +17,7 @@ from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
-from grug.ai_agents.discord_voice_agent import SpeechRecognitionSink
+from grug.ai_agents.discord_voice_listening_agent import SpeechRecognitionSink
 from grug.ai_agents.should_respond_agent import EvaluationAgent
 from grug.ai_tools import all_ai_tools
 from grug.settings import settings
@@ -199,6 +199,9 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
             logger.info(f"No members in {before.channel.name}, disconnecting...")
             voice_channel = next((vc for vc in discord_client.voice_clients if vc.channel == before.channel), None)
             await voice_channel.disconnect()
+
+
+# TODO: create a pgmq listener that will listen to messages and provide responses to them
 
 
 async def start_discord_bot():
