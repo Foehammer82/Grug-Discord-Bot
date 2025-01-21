@@ -5,7 +5,6 @@ from datetime import UTC, datetime, timedelta
 
 import discord
 import discord.utils
-import psycopg
 from discord import Member, VoiceState, app_commands
 from discord.ext import voice_recv
 from langchain_core.messages import HumanMessage
@@ -15,6 +14,9 @@ from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import create_react_agent
 from langgraph.store.postgres import AsyncPostgresStore
 from loguru import logger
+from psycopg import AsyncConnection
+from psycopg.rows import dict_row
+from psycopg_pool import AsyncConnectionPool
 
 from grug.ai_agents.discord_voice_agent import SpeechRecognitionSink
 from grug.ai_agents.should_respond_agent import EvaluationAgent
@@ -206,41 +208,54 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 
 
 async def start_discord_bot():
+    # Create the db schema for the scheduler
+    async with await AsyncConnection.connect(settings.postgres_dsn.replace("+psycopg", "")) as conn:
+        await conn.execute("CREATE SCHEMA IF NOT EXISTS genai")
 
-    conn = await psycopg.AsyncConnection.connect(
+    # Create a connection pool to the Postgres database for the Discord bot AI agents to use
+    async with AsyncConnectionPool(
         conninfo=settings.postgres_dsn.replace("+psycopg", ""),
-        options="-c search_path=myschema",
-    )
-    store = AsyncPostgresStore(conn)
-    await store.setup()
+        max_size=20,
+        kwargs={
+            "autocommit": True,
+            "prepare_threshold": 0,
+            "row_factory": dict_row,
+            "options": "-c search_path=genai",
+        },
+    ) as pool:
+        # Configure `store` and `checkpointer` for long-term and short-term memory
+        # (Ref: https://langchain-ai.github.io/langgraphjs/concepts/memory/#what-is-memory)
+        store = AsyncPostgresStore(pool)
+        await store.setup()
+        checkpointer = AsyncPostgresSaver(pool)
+        await checkpointer.setup()
 
-    checkpointer = AsyncPostgresSaver(conn)
-    await checkpointer.setup()
+        # Add the ReAct agent to the Discord client
+        discord_client.ai_agent = create_react_agent(
+            model=ChatOpenAI(
+                model_name=settings.ai_openai_model,
+                temperature=0,
+                max_tokens=None,
+                max_retries=2,
+                openai_api_key=settings.openai_api_key,
+            ),
+            tools=all_ai_tools,
+            checkpointer=checkpointer,
+            store=store,
+            state_modifier=settings.ai_base_instructions,
+        )
 
-    discord_client.ai_agent = create_react_agent(
-        model=ChatOpenAI(
-            model_name=settings.ai_openai_model,
-            temperature=0,
-            max_tokens=None,
-            max_retries=2,
-            openai_api_key=settings.openai_api_key,
-        ),
-        tools=all_ai_tools,
-        checkpointer=checkpointer,
-        store=store,
-        state_modifier=settings.ai_base_instructions,
-    )
+        # Add the should_respond agent to the Discord client
+        discord_client.evaluation_agent = EvaluationAgent()
 
-    discord_client.evaluation_agent = EvaluationAgent()
+        try:
+            await discord_client.start(settings.discord_token.get_secret_value())
+        finally:
+            # Disconnect from all voice channels
+            logger.info("Disconnecting from all voice channels...")
+            for voice_client in voice_channel_dict.values():
+                await voice_client.disconnect()
 
-    try:
-        await discord_client.start(settings.discord_token.get_secret_value())
-    except Exception as e:
-        logger.error(e)
-
-        # Disconnect from all voice channels
-        for voice_client in voice_channel_dict.values():
-            await voice_client.disconnect()
-
-        # Close the Discord client
-        await discord_client.close()
+            # Close the Discord client
+            logger.info("Closing the Discord client...")
+            await discord_client.close()

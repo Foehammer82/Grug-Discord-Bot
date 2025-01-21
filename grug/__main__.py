@@ -29,4 +29,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    anyio.run(main)
+    try:
+        anyio.run(main)
+    except KeyboardInterrupt:
+        logger.info("Shutting down Grug...")
