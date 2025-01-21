@@ -1,9 +1,11 @@
 """Discord bot interface for the Grug assistant server."""
 
+import asyncio
 from datetime import UTC, datetime, timedelta
 
 import discord
 import discord.utils
+import psycopg
 from discord import Member, VoiceState, app_commands
 from discord.ext import voice_recv
 from langchain_core.messages import HumanMessage
@@ -14,6 +16,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.store.postgres import AsyncPostgresStore
 from loguru import logger
 
+from grug.ai_agents.discord_voice_agent import SpeechRecognitionSink
 from grug.ai_agents.should_respond_agent import EvaluationAgent
 from grug.ai_tools import all_ai_tools
 from grug.settings import settings
@@ -123,7 +126,7 @@ async def on_message(message: discord.Message):
         logger.info(f"response_eval: {response_eval}")
 
         # Determine if the bot should respond based on the evaluation scores
-        should_respond = response_eval.relevance_score > 5 and response_eval.confidence_score > 5
+        should_respond = response_eval.relevance_score > 7 and response_eval.confidence_score > 5
 
     # Message is @mention or DM or should_respond is True
     # TODO: might need a tool that will get the image from a url and provide it to the model for image evaluation
@@ -160,70 +163,84 @@ async def on_message(message: discord.Message):
             )
 
 
+# TODO: change this so it's stored in the DB
 voice_channel_dict = {}
-
-
-def callback(user, data: voice_recv.VoiceData):
-    logger.info(f"Got packet from {user}")
-
-    ## voice power level, how loud the user is speaking
-    # ext_data = packet.extension_data.get(voice_recv.ExtensionID.audio_power)
-    # value = int.from_bytes(ext_data, 'big')
-    # power = 127-(value & 127)
-    # print('#' * int(power * (79/128)))
-    ## instead of 79 you can use shutil.get_terminal_size().columns-1
 
 
 @discord_client.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+    # TODO: move these to settings
+    # configurable parameters
+    voice_channel_join_delay_seconds = 0.5
+    voice_channel_leave_delay_seconds = 0.5
+
+    # Ignore bot users
     if member.bot:
         return
 
     # If the user joined a voice channel
-    if before.channel is None and after.channel is not None:
+    if after.channel is not None:
         logger.info(f"{member.display_name} joined {after.channel.name}")
 
-        # Connect the bot to the voice channel
-        if after.channel.id not in voice_channel_dict:
-            voice_client = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
-            voice_channel_dict[after.channel.id] = voice_client
-
-            voice_client.listen(voice_recv.BasicSink(callback))
+        # TODO: add tooling and store in DB for which voice channel the bot is assigned to be in.
+        #       since bots can only be in one voice channel at a time, we need to handle this accordingly.
+        # If the bot is not currently in the voice channel, connect to the voice channel
+        if discord_client.user.id not in [member.id for member in after.channel.members]:
+            await asyncio.sleep(voice_channel_join_delay_seconds)
+            voice_channel_dict[after.channel.id] = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
+            voice_channel_dict[after.channel.id].listen(SpeechRecognitionSink(discord_channel=after.channel))
 
     # If the user left a voice channel
-    elif before.channel is not None and after.channel is None:
+    elif before.channel is not None:
         logger.info(f"{member.display_name} left {before.channel.name}")
 
-        # Disconnect the bot from the voice channel
-        if before.channel.id in voice_channel_dict:
-            await voice_channel_dict[before.channel.id].disconnect()
-
-    # If the user switched voice channels
-    elif before.channel != after.channel:
-        logger.info(f"{member.display_name} switched from {before.channel.name} to {after.channel.name}")
+        if len(before.channel.members) <= 1 and discord_client.user.id in [
+            member.id for member in before.channel.members
+        ]:
+            await asyncio.sleep(voice_channel_leave_delay_seconds)
+            voice_client = voice_channel_dict.get(before.channel.id)
+            if voice_client:
+                await voice_client.disconnect()
+            else:
+                logger.warning(f"Voice client not found for channel {before.channel.id}")
 
 
 async def start_discord_bot():
-    async with AsyncPostgresStore.from_conn_string(settings.postgres_dsn.replace("+psycopg", "")) as store:
-        await store.setup()
 
-        async with AsyncPostgresSaver.from_conn_string(settings.postgres_dsn.replace("+psycopg", "")) as checkpointer:
-            await checkpointer.setup()
+    conn = await psycopg.AsyncConnection.connect(
+        conninfo=settings.postgres_dsn.replace("+psycopg", ""),
+        options="-c search_path=myschema",
+    )
+    store = AsyncPostgresStore(conn)
+    await store.setup()
 
-            discord_client.ai_agent = create_react_agent(
-                model=ChatOpenAI(
-                    model_name=settings.ai_openai_model,
-                    temperature=0,
-                    max_tokens=None,
-                    max_retries=2,
-                    openai_api_key=settings.openai_api_key,
-                ),
-                tools=all_ai_tools,
-                checkpointer=checkpointer,
-                store=store,
-                state_modifier=settings.ai_base_instructions,
-            )
+    checkpointer = AsyncPostgresSaver(conn)
+    await checkpointer.setup()
 
-            discord_client.evaluation_agent = EvaluationAgent()
+    discord_client.ai_agent = create_react_agent(
+        model=ChatOpenAI(
+            model_name=settings.ai_openai_model,
+            temperature=0,
+            max_tokens=None,
+            max_retries=2,
+            openai_api_key=settings.openai_api_key,
+        ),
+        tools=all_ai_tools,
+        checkpointer=checkpointer,
+        store=store,
+        state_modifier=settings.ai_base_instructions,
+    )
 
-            await discord_client.start(settings.discord_token.get_secret_value())
+    discord_client.evaluation_agent = EvaluationAgent()
+
+    try:
+        await discord_client.start(settings.discord_token.get_secret_value())
+    except Exception as e:
+        logger.error(e)
+
+        # Disconnect from all voice channels
+        for voice_client in voice_channel_dict.values():
+            await voice_client.disconnect()
+
+        # Close the Discord client
+        await discord_client.close()

@@ -7,7 +7,9 @@ services:
       - ${SECRETS_ENV_FILE:-config/secrets.env}
 
   postgres:
-    image: pgvector/pgvector:pg17
+    build:
+      context: ./
+      dockerfile: postgres.Dockerfile
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -16,6 +18,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      ES_JAVA_OPTS: "-Xms1024m -Xmx4096m"
     ports:
       - "5432:5432"
     healthcheck:

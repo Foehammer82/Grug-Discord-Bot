@@ -26,6 +26,7 @@ dependencies = [
     "langgraph-checkpoint-postgres>=2.0.13",
     "duckduckgo-search>=7.2.1",
     "discord-ext-voice-recv>=0.4.2a145",
+    "speechrecognition[openai]>=3.14.0",
 ]
 
 [dependency-groups]

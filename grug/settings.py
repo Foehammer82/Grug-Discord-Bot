@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic import Field, PostgresDsn, SecretStr, computed_field
@@ -45,6 +46,7 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_db: str = "postgres"
     postgres_apscheduler_schema: str = "apscheduler"
+    postgres_genai_schema: str = "genai"
 
     @computed_field
     @property
@@ -69,3 +71,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# used to set the environment variables for the OpenAI API key for local development
+os.environ["OPENAI_API_KEY"] = settings.openai_api_key.get_secret_value() if settings.openai_api_key else ""
