@@ -28,7 +28,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # AI Agent Settings
+    # AI Base Agent Settings
     ai_name: str = "Grug"
     ai_openai_model: str = "gpt-4o"
     ai_base_instructions: str = "\n".join(
@@ -40,6 +40,8 @@ class Settings(BaseSettings):
             "- When providing links to images, make sure to format them as markdown links so the image shows up.",
         ]
     )
+
+    # AI Image Settings
     ai_image_generation_enabled: bool = True
     ai_image_daily_generation_limit: int | None = Field(
         default=25, description="The daily limit of image generations. If None, there is no limit."
@@ -54,8 +56,6 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_db: str = "postgres"
-    postgres_apscheduler_schema: str = "apscheduler"
-    postgres_genai_schema: str = "genai"
 
     @computed_field
     @property
