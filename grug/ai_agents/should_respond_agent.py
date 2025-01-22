@@ -32,6 +32,7 @@ class EvaluationAgent:
                 Your job is to assess the message within the context of the conversation and provide:
 
                 1. A relevance score (1-10): How appropriate is it for '{settings.ai_name}' to respond?
+                   Specifically, what is the likelihood that the user wanted `{settings.ai_name}` to respond?
                 2. A confidence score (1-10): How confident would '{settings.ai_name}' be in providing a helpful response?
             """
                 ),

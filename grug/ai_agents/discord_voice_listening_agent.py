@@ -11,6 +11,7 @@ import audioop
 import time
 from collections import defaultdict
 from concurrent.futures import Future as CFuture
+from datetime import UTC, datetime
 from typing import Any, Awaitable, Callable, Final, Optional, Protocol, TypedDict, TypeVar
 
 import speech_recognition as sr  # type: ignore
@@ -97,7 +98,14 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
             # WEIRDEST BUG EVER: for some reason whisper keeps getting the word "you" from the recognizer, so
             #                    we'll just ignore any text segments that are just "you"
             if text_output and text_output.lower() != "you":
-                self.queue.send(str(self.discord_channel.id), {"text": text_output})
+                self.queue.send(
+                    str(self.discord_channel.id),
+                    {
+                        "user_id": user.id,
+                        "message_timestamp": datetime.now(tz=UTC).isoformat(),
+                        "message": text_output,
+                    },
+                )
 
         return callback
 

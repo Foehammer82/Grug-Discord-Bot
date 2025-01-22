@@ -1,12 +1,17 @@
 """Discord bot interface for the Grug assistant server."""
 
+import asyncio
+from collections import deque
 from datetime import UTC, datetime, timedelta
+from typing import Deque
 
 import discord
 import discord.utils
+import orjson
 from discord import Member, VoiceState, app_commands
 from discord.ext import voice_recv
-from langchain_core.messages import HumanMessage
+from discord.ext.voice_recv import VoiceRecvClient
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
@@ -16,6 +21,7 @@ from loguru import logger
 from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
+from tembo_pgmq_python.async_queue import PGMQueue
 
 from grug.ai_agents.discord_voice_listening_agent import SpeechRecognitionSink
 from grug.ai_agents.should_respond_agent import EvaluationAgent
@@ -168,6 +174,76 @@ async def on_message(message: discord.Message):
             )
 
 
+background_voice_responder_tasks = set()
+
+
+async def voice_responder(voice_channel: VoiceRecvClient):
+    queue = PGMQueue(
+        host=settings.postgres_host,
+        port=settings.postgres_port,
+        username=settings.postgres_user,
+        password=settings.postgres_password.get_secret_value(),
+        database=settings.postgres_db,
+    )
+
+    await queue.init()
+
+    message_buffer: Deque = deque(maxlen=100)
+
+    while voice_channel.is_connected():
+        for message in await queue.read_with_poll(
+            queue=str(voice_channel.channel.id),
+            vt=30,
+            qty=5,
+            max_poll_seconds=5,
+            poll_interval_ms=100,
+        ):
+            # Append the message to the current buffer
+            message_buffer.append(message.message)
+
+            # Delete the message from the queue
+            await queue.delete(str(voice_channel.channel.id), message.msg_id)
+
+            # Evaluate the message to determine if the bot should respond
+            response_eval = await discord_client.evaluation_agent.evaluate_message(
+                message=message.message["message"],
+                conversation_history=list(message_buffer),
+            )
+            logger.info(f"voice response_eval: {response_eval}")
+
+            # TODO: only respond if someone calls grug by name (or whatever the bot's name is)
+            # TODO: don't respond if someone is currently talking
+
+            # Determine if the bot should respond based on the evaluation scores
+            if response_eval.relevance_score > 7 and response_eval.confidence_score > 5:
+                final_state = await discord_client.ai_agent.ainvoke(
+                    {
+                        "messages": [
+                            SystemMessage(
+                                content=(
+                                    "The following is a list of messages that have been spoken in voice chat, remember that the speach "
+                                    "to text is not perfect, so there may be some errors in the text.  Do you best to assume what the "
+                                    "users meant to say, but DO NOT try to make sense of gibberish.  This list will be in json, each item "
+                                    "in the list will be a dict containing the `user_id`, `message_timestamp`, and `message`."
+                                    "Respond accordingly."
+                                )
+                            ),
+                            HumanMessage(content=orjson.dumps(list(message_buffer)).decode()),
+                        ]
+                    },
+                    config={
+                        "configurable": {
+                            "thread_id": str(voice_channel.channel.id),
+                            "user_id": f"{str(voice_channel.guild.id)}-{message.message["user_id"]}",
+                        }
+                    },
+                )
+
+                await voice_channel.channel.send(content=final_state["messages"][-1].content)
+
+    logger.info(f"Voice channel {voice_channel.channel.name} disconnected, stopping voice responder...")
+
+
 @discord_client.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
     # TODO: store this in the DB so that it can be configured for each server
@@ -189,6 +265,11 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
             logger.info(f"Connecting to {after.channel.name}")
             voice_channel = await after.channel.connect(cls=voice_recv.VoiceRecvClient)
             voice_channel.listen(SpeechRecognitionSink(discord_channel=after.channel))
+
+            # Start the voice responder agent
+            voice_responder_task = asyncio.create_task(voice_responder(voice_channel))
+            background_voice_responder_tasks.add(voice_responder_task)
+            voice_responder_task.add_done_callback(background_voice_responder_tasks.discard)
 
     # If the user left the bot voice channel
     elif before.channel.id == bot_voice_channel_id and before.channel is not None:

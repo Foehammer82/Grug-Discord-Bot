@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # AI Base Agent Settings
     ai_name: str = "Grug"
-    ai_openai_model: str = "gpt-4o"
+    ai_openai_model: str = "gpt-4o-mini"
     ai_base_instructions: str = "\n".join(
         [
             f"- your name is {ai_name}.",
