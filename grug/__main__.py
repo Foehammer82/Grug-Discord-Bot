@@ -4,7 +4,7 @@ import anyio
 from loguru import logger
 
 from grug.db import init_db
-from grug.discord_bot import start_discord_bot
+from grug.discord_client import start_discord_bot
 from grug.scheduler import start_scheduler
 from grug.settings import settings
 

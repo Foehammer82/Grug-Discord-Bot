@@ -12,7 +12,7 @@ import time
 from collections import defaultdict
 from concurrent.futures import Future as CFuture
 from datetime import UTC, datetime
-from typing import Any, Awaitable, Callable, Final, Optional, Protocol, TypedDict, TypeVar
+from typing import Awaitable, Final, Optional, Protocol, TypedDict, TypeVar
 
 import speech_recognition as sr  # type: ignore
 from discord import User, VoiceChannel
@@ -23,14 +23,9 @@ from tembo_pgmq_python import PGMQueue
 
 from grug.settings import settings
 
-T = TypeVar("T")
-
 
 class SRStopper(Protocol):
     def __call__(self, wait: bool = True, /) -> None: ...
-
-
-SRTextCB = Callable[[User, str], Any]
 
 
 class _StreamData(TypedDict):
@@ -60,7 +55,7 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
         if str(discord_channel.id) not in self.queue.list_queues():
             self.queue.create_queue(str(discord_channel.id))
 
-    def _await(self, coro: Awaitable[T]) -> CFuture[T]:
+    def _await(self, coro: Awaitable[TypeVar]) -> CFuture[TypeVar]:
         assert self.client is not None
         return asyncio.run_coroutine_threadsafe(coro, self.client.loop)
 
@@ -77,7 +72,7 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
 
         if not sdata["stopper"]:
             sdata["stopper"] = sdata["recognizer"].listen_in_background(
-                source=DiscordSRAudioSource(sdata["buffer"]),
+                source=_DiscordSRAudioSource(sdata["buffer"]),
                 callback=self.background_listener(user),
                 phrase_time_limit=10,
             )
@@ -126,7 +121,7 @@ class SpeechRecognitionSink(AudioSink):  # type: ignore
                 del buffer[:]
 
 
-class DiscordSRAudioSource(sr.AudioSource):
+class _DiscordSRAudioSource(sr.AudioSource):
     little_endian: Final[bool] = True
     SAMPLE_RATE: Final[int] = 48_000
     SAMPLE_WIDTH: Final[int] = 2
