@@ -4,7 +4,21 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/python/mypy)
 
-A self-hostable tabletop-RPG GenAI bot
+Grug is a self-hostable tabletop-RPG GenAI bot designed to enhance your RPG experience by providing intelligent
+responses and interactions.
+
+## Features
+
+- **Voice Recognition**: Listens to voice chat and responds intelligently.
+- **Text Responses**: Handles text messages and replies contextually.
+
+## Adding Grug to Your Server
+
+TODO: instructions for how to sign up and use the currently deployed Grug (not ready yet)
+
+## Self Hosting
+
+TODO: instructions for how to self host
 
 ## Planned Features
 
@@ -13,8 +27,8 @@ A self-hostable tabletop-RPG GenAI bot
 - [ ] add docs for general usage and features of Grug
 - [ ] add docs for roadmap and planned features
 - [ ] create a way to enable others to use grug in their own server if they want
-    - this would need to handle cost and be able to scale so that users can subscribe and then have the ability to
-      invite Grug to their server.
+   - this would need to handle cost and be able to scale so that users can subscribe and then have the ability to
+     invite Grug to their server.
 - [ ] Initiative tracker
 - [ ] Character creation / player sheet integration and tools
 - [ ] Random encounter generator
@@ -22,21 +36,21 @@ A self-hostable tabletop-RPG GenAI bot
 - [ ] Random NPC generator
 - [ ] Random dungeon generator
 - [ ] rules lookup
-    - users must upload their own rulebooks and content as that is typically closed source
-    - some tools will be provided out of the box, such as AoN for Pathfinder, and
-    - onlines resources that are open for use:
-        - https://media.wizards.com/2018/dnd/downloads/DnD_BasicRules_2018.pdf
-        - AoN for Pathfinder
+   - users must upload their own rulebooks and content as that is typically closed source
+   - some tools will be provided out of the box, such as AoN for Pathfinder, and
+   - onlines resources that are open for use:
+      - https://media.wizards.com/2018/dnd/downloads/DnD_BasicRules_2018.pdf
+      - AoN for Pathfinder
 - [x] dice roller
 - [ ] music player
-    - youtube search code: https://github.com/joetats/youtube_search/blob/master/youtube_search/__init__.py
-    - youtube downloader: https://github.com/yt-dlp/yt-dlp
-    - can use the above two to find and obtain music and then can create an agent to stream it into a voice channel
+   - youtube search code: https://github.com/joetats/youtube_search/blob/master/youtube_search/__init__.py
+   - youtube downloader: https://github.com/yt-dlp/yt-dlp
+   - can use the above two to find and obtain music and then can create an agent to stream it into a voice channel
 - [ ] session notes (by listening to the play session)
 - [ ] scheduling and reminders
-    - [ ] ability to send reminder for the upcoming session
-    - [ ] food tracking feature (for in-person sessions where there is a rotation of who brings food)
-    - [ ] ability to send reminder for who is bringing food
-    - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
-      everyone)
+   - [ ] ability to send reminder for the upcoming session
+   - [ ] food tracking feature (for in-person sessions where there is a rotation of who brings food)
+   - [ ] ability to send reminder for who is bringing food
+   - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
+     everyone)
 - [ ] general chatbot functionality with a defined name and personality
