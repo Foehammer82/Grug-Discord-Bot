@@ -31,13 +31,8 @@ jobs:
 
       - name: Build and push Grug Base Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}:${{ env.VERSION }} .
-          docker push ghcr.io/${{ github.repository }}:${{ env.VERSION }}
-
-      - name: Build and push Grug Postgres Docker image
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}-pg:${{ env.VERSION }} .
-          docker push ghcr.io/${{ github.repository }}-pg:${{ env.VERSION }}
+          docker build -t ghcr.io/$(${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }} .
+          docker push ghcr.io/$(${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }}
 
       - name: Bump version number
         if: github.ref == 'refs/heads/main'
