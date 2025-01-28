@@ -1,4 +1,8 @@
-# Grug
+<p align="center">
+  <a href="./"><img src="./docs/assets/grug.png" alt="Grug Bot" width="200"></a>
+</p>
+
+# Grug Discord Bot
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -9,8 +13,8 @@ responses and interactions.
 
 ## Features
 
-- **Voice Recognition**: Listens to voice chat and responds intelligently.
 - **Text Responses**: Handles text messages and replies contextually.
+- **Voice Recognition**: Listens to voice chat and responds intelligently.
 
 ## Adding Grug to Your Server
 
