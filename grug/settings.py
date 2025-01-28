@@ -20,13 +20,7 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
 
     # Discord Settings
-    discord_bot_enable_contextual_responses: bool = Field(
-        default=True,
-        description=(
-            "This will enable the messaging bot to respond in group chats without being @mentioned.  It evaluates "
-            "the last message and chat history to determine if it should respond."
-        ),
-    )
+    discord_enable_voice_client: bool = True
 
     # AI Base Agent Settings
     ai_name: str = "Grug"
