@@ -18,8 +18,6 @@ from grug.ai_agents.base_react_agent import get_react_agent
 from grug.discord_speech_recognition import SpeechRecognitionSink
 from grug.settings import settings
 
-# TODO: delete me, just testing to make sure PR's require pre-commit checks
-
 
 class DiscordClient(discord.Client):
     react_agent: CompiledGraph | None = None
