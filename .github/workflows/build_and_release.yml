@@ -31,8 +31,9 @@ jobs:
 
       - name: Build and push Grug Base Docker image
         run: |
-          docker build -t ghcr.io/$(${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }} .
-          docker push ghcr.io/$(${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ env.VERSION }}
+          IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMAGE_NAME:${{ env.VERSION }} .
+          docker push $IMAGE_NAME:${{ env.VERSION }}
 
       - name: Bump version number
         if: github.ref == 'refs/heads/main'
