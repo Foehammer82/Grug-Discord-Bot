@@ -38,7 +38,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add pyproject.toml
           git commit -m "Bump version to $NEW_VERSION"
-          git push origin main
+          git push --force origin main
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
