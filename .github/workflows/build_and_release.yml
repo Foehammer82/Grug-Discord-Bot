@@ -29,6 +29,19 @@ jobs:
           VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Bump version number
+        if: github.ref == 'refs/heads/main'
+        run: |
+          NEW_VERSION=$(echo ${{ env.VERSION }} | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
+          sed -i "s/^version = \"${{ env.VERSION }}\"/version = \"$NEW_VERSION\"/" pyproject.toml
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add pyproject.toml
+          git commit -m "Bump version to $NEW_VERSION"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
       - name: Build and Push Grug Base Docker image
         run: |
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
@@ -42,17 +55,6 @@ jobs:
           docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ env.VERSION }} .
           docker push $IMAGE_NAME-postgres:${{ env.VERSION }}
           docker save $IMAGE_NAME-postgres:${{ env.VERSION }} -o grug_postgres_${{ env.VERSION }}.tar
-
-      - name: Bump version number
-        if: github.ref == 'refs/heads/main'
-        run: |
-          NEW_VERSION=$(echo ${{ env.VERSION }} | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
-          sed -i "s/^version = \"${{ env.VERSION }}\"/version = \"$NEW_VERSION\"/" pyproject.toml
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add pyproject.toml
-          git commit -m "Bump version to $NEW_VERSION"
-          git push origin main
 
       - name: Create GitHub Release
         id: _release
