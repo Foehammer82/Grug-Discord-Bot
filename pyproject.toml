@@ -62,3 +62,6 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 120
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:version"
