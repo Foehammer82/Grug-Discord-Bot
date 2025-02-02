@@ -1,6 +1,6 @@
 [project]
 name = "grug"
-version = "0.0.3"
+version = "0.0.4"
 description = "A self-hostable tabletop-RPG GenAI bot"
 readme = "README.md"
 requires-python = ">=3.12"
