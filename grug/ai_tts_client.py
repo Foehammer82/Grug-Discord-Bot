@@ -17,6 +17,10 @@ def get_tts(text: str) -> Path:
         text (str): The text to convert to speech.
 
     Returns: The path to the generated wav audio file.
+
+    Notes:
+        - F5-TTS Hugging Face Space: https://huggingface.co/spaces/mrfakename/E2-F5-TTS
+        - F5-TTS source code: https://github.com/SWivid/F5-TTS
     """
     voices_dir = settings.root_dir / "assets" / "bot_voices"
 

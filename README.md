@@ -29,20 +29,29 @@ TODO: instructions for how to self-host
 - [ ] add docs for self hosting
 - [ ] add docs for general usage and features of Grug
 - [ ] rules lookup
-   - users must upload their own rulebooks and content as that is typically closed source
-   - some tools will be provided out of the box, such as AoN for Pathfinder, and
-   - onlines resources that are open for use:
-      - https://media.wizards.com/2018/dnd/downloads/DnD_BasicRules_2018.pdf
-      - AoN for Pathfinder
+    - users must upload their own rulebooks and content as that is typically closed source
+    - some tools will be provided out of the box, such as AoN for Pathfinder, and
+    - onlines resources that are open for use:
+        - https://media.wizards.com/2018/dnd/downloads/DnD_BasicRules_2018.pdf
+        - AoN for Pathfinder
 - [x] dice roller
 - [ ] music player
-   - youtube search code: https://github.com/joetats/youtube_search/blob/master/youtube_search/__init__.py
-   - youtube downloader: https://github.com/yt-dlp/yt-dlp
-   - can use the above two to find and obtain music and then can create an agent to stream it into a voice channel
+    - youtube search code: https://github.com/joetats/youtube_search/blob/master/youtube_search/__init__.py
+    - youtube downloader: https://github.com/yt-dlp/yt-dlp
+    - can use the above two to find and obtain music and then can create an agent to stream it into a voice channel
 - [ ] session notes (by listening to the play session)
 - [ ] scheduling and reminders
-   - [ ] ability to send reminder for the upcoming session
-   - [ ] food tracking feature (for in-person sessions where there is a rotation of who brings food)
-   - [ ] ability to send reminder for who is bringing food
-   - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
-     everyone)
+    - [ ] ability to send reminder for the upcoming session
+    - [ ] food tracking feature (for in-person sessions where there is a rotation of who brings food)
+    - [ ] ability to send reminder for who is bringing food
+    - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
+      everyone)
+
+## References
+
+- TTS:
+    - [F5-TTS Hugging Face Space](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
+    - [F5-TTS source code](https://github.com/SWivid/F5-TTS)
+- STT:
+    - https://github.com/Vaibhavs10/insanely-fast-whisper
+    - https://github.com/systran/faster-whisper
