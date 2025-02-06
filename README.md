@@ -55,3 +55,6 @@ TODO: instructions for how to self-host
 - STT:
     - https://github.com/Vaibhavs10/insanely-fast-whisper
     - https://github.com/systran/faster-whisper
+- Self-Hostable AI Tools and Models:
+    - https://technotim.live/posts/ai-stack-tutorial/
+    - https://github.com/AUTOMATIC1111/stable-diffusion-webui
