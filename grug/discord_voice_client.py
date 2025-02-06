@@ -25,6 +25,7 @@ from speech_recognition.recognizers.whisper_api import openai as sr_openai
 from tembo_pgmq_python import async_queue
 from tembo_pgmq_python import queue as sync_queue
 
+from grug.ai_tts_client import get_tts
 from grug.settings import settings
 
 
@@ -352,7 +353,11 @@ class DiscordVoiceClient:
                             }
                         },
                     )
-                    await voice_channel.channel.send(content=final_state["messages"][-1].content)
+
+                    response_text = final_state["messages"][-1].content
+                    await voice_channel.channel.send(content=response_text)
+                    voice_channel.play(FFmpegPCMAudio(get_tts(response_text).as_posix()))
+
                     logger.info(f"Responded to {responding_to.user_id} for request: {' '.join(list(message_buffer))}")
 
                     # Reset the responding_to object
