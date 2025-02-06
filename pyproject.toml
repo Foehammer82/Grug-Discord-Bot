@@ -30,21 +30,17 @@ dependencies = [
     "gradio-tools>=0.0.9",
     "rapidfuzz>=3.12.1",
     "gradio-client>=1.7.0",
-    "notebook>=7.3.2",
 ]
 
 [dependency-groups]
 dev = [
     "black>=24.10.0",
     "pre-commit>=4.0.1",
-]
-docs = [
     "mkdocs-material>=9.5.50",
-]
-test = [
     "pytest-asyncio>=0.25.2",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
+    "notebook>=7.3.2",
 ]
 
 [tool.pytest.ini_options]

@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph.graph import CompiledGraph
 from loguru import logger
 
-from grug.ai_agents.base_react_agent import get_react_agent
+from grug.ai_agent import get_react_agent
 from grug.discord_voice_client import DiscordVoiceClient
 from grug.settings import settings
 
