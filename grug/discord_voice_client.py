@@ -194,6 +194,29 @@ class DiscordVoiceClient:
         # Register the on_voice_state_update event
         self.discord_client.event(self.on_voice_state_update)
 
+    async def get_bot_introduction_text(self, voice_channel: discord.VoiceState) -> str:
+        """Get the bot introduction text for a voice channel."""
+        final_state = await self.react_agent.ainvoke(
+            {
+                "messages": [
+                    SystemMessage(
+                        content=(
+                            "- When introducing yourself, give a quick summary of who you are. \n"
+                            f"- Make sure to let the user know that you are listening in {voice_channel.channel.name}"
+                            f" voice channel on the {voice_channel.channel.guild.name} server. \n"
+                        )
+                    ),
+                    HumanMessage(content="Introduce yourself!"),
+                ]
+            },
+            config={
+                "configurable": {
+                    "thread_id": str(voice_channel.channel.id),
+                }
+            },
+        )
+        return final_state["messages"][-1].content
+
     async def on_voice_state_update(
         self,
         member: discord.Member,
@@ -207,12 +230,17 @@ class DiscordVoiceClient:
         if member.bot:
             return
 
-        # TODO: make sure to send a message to all users that join a bot voice channel what the bot is doing and
-        #       how their data is being handled
-
         # If the user joined the bot voice channel
         if after.channel is not None and after.channel.id == bot_voice_channel_id and before.channel is None:
             logger.info(f"{member.display_name} joined {after.channel.name}")
+
+            # Notify the user that the bot is listening
+            await after.channel.send(
+                content=(
+                    f"{await self.get_bot_introduction_text(after)}\n\n"
+                    f'*You can talk to me by saying "Hey, {settings.ai_name.title()}"*'
+                ),
+            )
 
             # If the bot is not currently in the voice channel, connect to the voice channel
             if self.discord_client.user not in after.channel.members:
@@ -282,13 +310,13 @@ class DiscordVoiceClient:
                         )
                         > 80
                     ):
-                        # TODO: give indication the bot is thinking...
-                        audio_source = FFmpegPCMAudio(
-                            (settings.root_dir / "assets/sound_effects" / "boop.wav").as_posix()
-                        )
-                        voice_channel.play(audio_source)
-
                         logger.info(f"Bot was called by name by {message.message.get('user_id')}")
+
+                        # Play the boop sound effect when the bot is called by name
+                        voice_channel.play(
+                            FFmpegPCMAudio((settings.root_dir / "assets/sound_effects/boop.wav").as_posix())
+                        )
+
                         message_buffer.clear()
                         message_buffer.append(message.message.get("message"))
                         responding_to = _RespondingTo(
