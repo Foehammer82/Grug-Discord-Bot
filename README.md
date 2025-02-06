@@ -13,8 +13,8 @@ responses and interactions.
 
 ## Features
 
-- **Text Responses**: Handles text messages and replies contextually.
-- **Voice Recognition**: Listens to voice chat and responds intelligently.
+- **Text Responses**: Can respond in discord chats when users @mention the bot, or when DM'd.
+- **Listens In Voice Chat**: Listens to voice chat and responds intelligently.
 
 ## Adding Grug to Your Server
 
@@ -22,23 +22,12 @@ TODO: instructions for how to sign up and use the currently deployed Grug (not r
 
 ## Self Hosting
 
-TODO: instructions for how to self host
+TODO: instructions for how to self-host
 
 ## Planned Features
 
-- [ ] add github actions to build and deploy the image to the repo
 - [ ] add docs for self hosting
 - [ ] add docs for general usage and features of Grug
-- [ ] add docs for roadmap and planned features
-- [ ] create a way to enable others to use grug in their own server if they want
-   - this would need to handle cost and be able to scale so that users can subscribe and then have the ability to
-     invite Grug to their server.
-- [ ] Initiative tracker
-- [ ] Character creation / player sheet integration and tools
-- [ ] Random encounter generator
-- [ ] Random loot generator
-- [ ] Random NPC generator
-- [ ] Random dungeon generator
 - [ ] rules lookup
    - users must upload their own rulebooks and content as that is typically closed source
    - some tools will be provided out of the box, such as AoN for Pathfinder, and
@@ -57,4 +46,3 @@ TODO: instructions for how to self host
    - [ ] ability to send reminder for who is bringing food
    - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
      everyone)
-- [ ] general chatbot functionality with a defined name and personality

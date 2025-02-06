@@ -28,12 +28,15 @@ services:
       ES_JAVA_OPTS: "-Xms1024m -Xmx4096m"
     ports:
       - "5432:5432"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
-#      interval: 30s
-#      timeout: 60s
-#      retries: 5
-#      start_period: 80s
+
+  f5tts:
+    image: ghcr.io/swivid/f5-tts:main
+    runtime: nvidia
+    command: f5-tts_infer-gradio --port 7860 --host 0.0.0.0
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+    ports:
+      - "7860:7860"
 
 volumes:
   postgres_data:

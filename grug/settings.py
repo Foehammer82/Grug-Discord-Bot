@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from loguru import logger
 from pydantic import Field, PostgresDsn, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -51,11 +50,38 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_db: str = "postgres"
 
+    # TTS Settings
+    tts_enabled: bool = True
+    tts_f5_host: str = "localhost"
+    tts_f5_port: int = 7860
+    tts_voice: str = "grug"  # TODO: validate that it exists in the voices directory
+    tts_remove_silence: bool = Field(
+        default=False,
+        description="The model tends to produce silences, especially on longer audio. We can manually remove silences if needed. Note that this is an experimental feature and may produce strange results. This will also increase generation time.",
+    )
+    tts_crossroad_duration_slider: float = Field(
+        default=0.15,
+        ge=0.0,
+        le=1.0,
+        description="Set the duration of the cross-fade between audio clips.",
+    )
+    tts_nfe_slider: int = Field(
+        default=32,
+        ge=4,
+        le=64,
+        description="Set the number of denoising steps.",
+    )
+    tts_speed_slider: float = Field(
+        default=1.0,
+        ge=0.3,
+        le=2.0,
+        description="Adjust the speed of the audio.",
+    )
+
     @computed_field
     @property
     def root_dir(self) -> Path:
         """Get the root directory of the project."""
-        logger.info(f"Root dir: {_ROOT_DIR}")
         return _ROOT_DIR
 
     @computed_field
