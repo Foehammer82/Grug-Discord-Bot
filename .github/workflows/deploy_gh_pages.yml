@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: write
-
+# TODO: should tag and release with no build when docs changes, bumping the release version
 jobs:
   deploy:
     runs-on: ubuntu-latest
