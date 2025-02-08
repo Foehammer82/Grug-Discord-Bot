@@ -1,36 +1,33 @@
-FROM python:3.12-slim AS builder
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+# Install the project into /app
 WORKDIR /app
 
-# Install dependencies
-COPY pyproject.toml uv.lock /app/
+# ensure that all uv commands within the Dockerfile compile bytecode:
+ENV UV_COMPILE_BYTECODE=1
+# silences warnings about not being able to use hard links
+ENV UV_LINK_MODE=copy
+# Disable automatic downloads of Python
+ENV UV_PYTHON_DOWNLOADS=never
+
+# Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-editable
+    uv sync --frozen --no-install-project --no-dev
 
-# Copy the project into the intermediate image
-ADD grug /app/grug
-ADD alembic /app/alembic
-ADD alembic.ini /app/almebic.ini
-
-# Sync the project
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-editable
+    uv sync --frozen --no-dev --no-editable
 
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
-FROM python:3.12-slim
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
 
-WORKDIR /app
+CMD ["start-grug"]
 
-# Copy the environment, but not the source code
-COPY --from=builder --chown=app:app /app /app
-ENV PATH="/app/.venv/bin:${PATH}"
-
-# Run the application
-CMD ["python", "-m", "grug"]
-
-# TODO: build a healthcheck into the application
-# HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-#  CMD poetry run python grug health || exit 1
+# TODO: Add a healthcheck

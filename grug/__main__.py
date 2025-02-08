@@ -30,9 +30,12 @@ async def main():
     logger.info("Grug has shut down...")
 
 
-if __name__ == "__main__":
-    # Don't log the stack trace for a keyboard interrupt
+def run_main():
     with contextlib.suppress(KeyboardInterrupt):
         anyio.run(main)
 
     logger.info("Shutting down Grug...")
+
+
+if __name__ == "__main__":
+    run_main()
