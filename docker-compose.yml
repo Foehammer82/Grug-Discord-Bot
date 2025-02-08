@@ -1,9 +1,9 @@
 services:
-  # TODO: build and store the app image to github registry
   application:
     build:
       context: ./
       dockerfile: Dockerfile
+    image: grug-discord-bot:local
     restart: unless-stopped
     env_file:
       - ${SECRETS_ENV_FILE:-config/secrets.env}
@@ -17,6 +17,7 @@ services:
     build:
       context: ./
       dockerfile: postgres.Dockerfile
+    image: grug-discord-bot-postgres:local
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
