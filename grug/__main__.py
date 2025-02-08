@@ -15,9 +15,9 @@ from grug.settings import settings
 async def main():
     """Main application entrypoint."""
     if not settings.discord_token:
-        raise ValueError("`DISCORD_TOKEN` env variable is required to run the Grug bot.")
+        raise ValueError("`DISCORD_TOKEN` env variable is required to run the Grug Discord Agent.")
     if not settings.openai_api_key:
-        raise ValueError("`OPENAI_API_KEY` env variable is required to run the Grug bot.")
+        raise ValueError("`OPENAI_API_KEY` env variable is required to run the Grug Discord Agent.")
 
     logger.info("Starting Grug...")
 

@@ -2,7 +2,7 @@
 
 #### Introduction
 
-Welcome to Grug, a Discord bot designed to assist groups of people who play tabletop RPGs. By using Grug, you agree to
+Welcome to Grug, a Discord Agent designed to assist groups of people who play tabletop RPGs. By using Grug, you agree to
 abide by these Terms of Service. Please read them carefully.
 
 #### 1. Acceptance of Terms

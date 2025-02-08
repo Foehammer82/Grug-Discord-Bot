@@ -41,6 +41,5 @@ jobs:
           enable-cache: true
       - name: Install the project
         run: uv sync --only-group docs
-      - run: uv run mike delete --all # Run once to clean up the existing docs branch
       - run: uv run mike deploy --push --update-aliases ${{ needs.tag_and_release.outputs.new_tag }} latest
       - run: uv run mkdocs gh-deploy --force

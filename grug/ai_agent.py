@@ -20,7 +20,7 @@ async def get_react_agent() -> AsyncGenerator[CompiledGraph, Any]:
     async with await AsyncConnection.connect(settings.postgres_dsn.replace("+psycopg", "")) as conn:
         await conn.execute("CREATE SCHEMA IF NOT EXISTS genai")
 
-    # Create a connection pool to the Postgres database for the Discord bot AI agents to use
+    # Create a connection pool to the Postgres database for the GenAI agents to use
     async with AsyncConnectionPool(
         conninfo=settings.postgres_dsn.replace("+psycopg", ""),
         max_size=20,

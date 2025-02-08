@@ -66,7 +66,7 @@ async def generate_ai_image(prompt: str) -> dict[str, str | int] | None:
         logger.info(f"Quality: {settings.ai_image_default_quality}")
 
         if not settings.openai_api_key:
-            raise ValueError("`OPENAI_API_KEY` env variable is required to run the Grug bot.")
+            raise ValueError("`OPENAI_API_KEY` env variable is required to run the Grug Discord Agent.")
 
         openai_client = AsyncOpenAI(api_key=settings.openai_api_key.get_secret_value())
         response = await openai_client.images.generate(

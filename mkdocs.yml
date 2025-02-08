@@ -1,6 +1,6 @@
 # Project information
-site_name: Grug Discord Bot
-site_url: https://foehammer82.github.io/Grug-Discord-Bot/
+site_name: Grug Discord Agent
+site_url: https://foehammer82.github.io/Grug-Discord-Agent/
 
 # Repository
 repo_url: https://github.com/Foehammer82/Grug-Discord-Agent
@@ -68,6 +68,7 @@ markdown_extensions:
 
 plugins:
   - search
+  - mike
 
 extra:
   version:

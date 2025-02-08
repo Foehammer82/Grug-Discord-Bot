@@ -3,7 +3,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: grug-discord-bot:local
+    image: grug-discord-agent:local
     restart: unless-stopped
     env_file:
       - ${SECRETS_ENV_FILE:-config/secrets.env}
@@ -19,7 +19,7 @@ services:
     build:
       context: ./
       dockerfile: postgres.Dockerfile
-    image: grug-discord-bot-postgres:local
+    image: grug-discord-agent-postgres:local
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data

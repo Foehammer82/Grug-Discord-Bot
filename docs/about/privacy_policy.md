@@ -3,7 +3,7 @@
 #### Introduction
 
 Grug is committed to protecting your privacy. This Privacy Policy outlines how we collect, use, disclose, and safeguard
-your information when you use the Grug Discord bot. Please read this Privacy Policy carefully.
+your information when you use the Grug Discord Agent. Please read this Privacy Policy carefully.
 
 #### 1. Information We Collect
 
