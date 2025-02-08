@@ -1,10 +1,15 @@
+# Project information
 site_name: Grug Discord Bot
 site_url: https://foehammer82.github.io/Grug-Discord-Bot/
+
+# Repository
 repo_url: https://github.com/Foehammer82/Grug-Discord-Agent
 repo_name: Foehammer82/Grug-Discord-Agent
+edit_uri: ""
 
 theme:
   name: material
+  custom_dir: overrides
   favicon: /assets/favicon.ico
   icon:
     repo: fontawesome/brands/github
