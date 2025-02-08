@@ -39,7 +39,7 @@ jobs:
         with:
           version: "0.5.24"
           enable-cache: true
-      - name: Install the project
-        run: uv sync --only-group docs
-      - run: uv run mike deploy --push --update-aliases ${{ needs.tag_and_release.outputs.new_tag }} latest
-      - run: uv run mkdocs gh-deploy --force
+      - name: Install Dependencies
+        run: uv sync
+      - name: Deploy to GitHub Pages
+        run: uv run mike deploy --push --update-aliases ${{ needs.tag_and_release.outputs.new_tag }} latest

@@ -9,7 +9,6 @@ from grug.scheduler import start_scheduler
 from grug.settings import settings
 
 # TODO: evaluate llm caching: https://python.langchain.com/api_reference/community/cache.html
-# TODO:note to force build... delete me
 
 
 # noinspection PyTypeChecker

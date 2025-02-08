@@ -39,5 +39,3 @@ and capabilities through intelligent responses and interactions.
     - auto generate NPCs
     - auto generate loot
     - be able to understand character sheets and help players level up and manage their characters
-
-> TODO:note to force build... delete me
