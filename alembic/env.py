@@ -8,7 +8,7 @@ from sqlalchemy.engine import Connection
 
 from alembic import context
 from grug import models
-from grug.db import async_engine
+from grug.db import sqa_async_engine
 from grug.settings import settings
 
 logging.config.fileConfig(context.config.config_file_name)
@@ -47,10 +47,10 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_migrations_online() -> None:
-    async with async_engine.connect() as connection:
+    async with sqa_async_engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
 
-    await async_engine.dispose()
+    await sqa_async_engine.dispose()
 
 
 if context.is_offline_mode():

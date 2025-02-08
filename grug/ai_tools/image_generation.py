@@ -7,7 +7,7 @@ from openai.types import Image
 from sqlalchemy import Date, cast, func
 from sqlmodel import select
 
-from grug.db import async_session_factory
+from grug.db import sqa_async_session_factory
 from grug.models import DalleImageRequest
 from grug.settings import settings
 
@@ -40,7 +40,7 @@ async def generate_ai_image(prompt: str) -> dict[str, str | int] | None:
         raise ValueError("AI image generation is disabled.")
 
     # Return None if the assistant is not available
-    async with async_session_factory() as session:
+    async with sqa_async_session_factory() as session:
 
         # Get the image requests remaining for the day
         # noinspection PyTypeChecker,Pydantic

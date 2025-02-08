@@ -6,38 +6,29 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import create_react_agent
 from langgraph.store.postgres import AsyncPostgresStore
-from psycopg import AsyncConnection
-from psycopg.rows import dict_row
-from psycopg_pool import AsyncConnectionPool
 
 from grug.ai_tools import all_ai_tools
+from grug.db import get_genai_psycopg_async_pool
 from grug.settings import settings
 
 
 @asynccontextmanager
 async def get_react_agent() -> AsyncGenerator[CompiledGraph, Any]:
+    conn_pool = await get_genai_psycopg_async_pool()
+    await conn_pool.open()
+
     # Create the db schema for the scheduler
-    async with await AsyncConnection.connect(settings.postgres_dsn.replace("+psycopg", "")) as conn:
+    async with conn_pool.connection() as conn:
         await conn.execute("CREATE SCHEMA IF NOT EXISTS genai")
 
-    # Create a connection pool to the Postgres database for the GenAI agents to use
-    async with AsyncConnectionPool(
-        conninfo=settings.postgres_dsn.replace("+psycopg", ""),
-        max_size=20,
-        kwargs={
-            "autocommit": True,
-            "prepare_threshold": 0,
-            "row_factory": dict_row,
-            "options": "-c search_path=genai",
-        },
-    ) as pool:
-        # Configure `store` and `checkpointer` for long-term and short-term memory
-        # (Ref: https://langchain-ai.github.io/langgraphjs/concepts/memory/#what-is-memory)
-        store = AsyncPostgresStore(pool)
-        await store.setup()
-        checkpointer = AsyncPostgresSaver(pool)
-        await checkpointer.setup()
+    # Configure `store` and `checkpointer` for long-term and short-term memory
+    # (Ref: https://langchain-ai.github.io/langgraphjs/concepts/memory/#what-is-memory)
+    store = AsyncPostgresStore(conn_pool)
+    await store.setup()
+    checkpointer = AsyncPostgresSaver(conn_pool)
+    await checkpointer.setup()
 
+    try:
         yield create_react_agent(
             model=ChatOpenAI(
                 model_name=settings.ai_openai_model,
@@ -51,3 +42,7 @@ async def get_react_agent() -> AsyncGenerator[CompiledGraph, Any]:
             store=store,
             state_modifier=settings.ai_base_instructions,
         )
+
+    finally:
+        # Close the connection pool after the context manager exits
+        await conn_pool.close()
