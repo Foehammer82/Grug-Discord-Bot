@@ -6,6 +6,8 @@ from loguru import logger
 
 from grug.settings import settings
 
+# TODO: handle things so that if the TTS server is down the app can still function, currently if TTS is enabled the
+#       app will crash or not start if the TTS server is unreachable.
 _CLIENT = Client(f"http://{settings.tts_f5_host}:{settings.tts_f5_port}/")
 _CLIENT.predict(new_choice="F5-TTS", api_name="/switch_tts_model")
 
