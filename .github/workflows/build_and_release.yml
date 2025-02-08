@@ -6,99 +6,18 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  tag-and-release:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get latest release version
-        id: get_latest_release
-        uses: actions/github-script@v6
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            const latestRelease = await github.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            core.setOutput('latest_version', latestRelease.data.tag_name);
-
-      - name: Print latest release version
-        run: echo "The latest release version is ${{ steps.get_latest_release.outputs.latest_version }}"
-
-      - name: Extract version number
-        id: extract_version
-        run: |
-          VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Bump version number
-        if: github.ref == 'refs/heads/main'
-        run: |
-          NEW_VERSION=$(echo ${{ env.VERSION }} | awk -F. -v OFS=. '{$NF = $NF + 1; print}')
-          sed -i "s/^version = \"${{ env.VERSION }}\"/version = \"$NEW_VERSION\"/" pyproject.toml
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add pyproject.toml
-          git commit -m "Bump version to $NEW_VERSION"
-          git push --force origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-      - name: Build and Push Grug Base Docker image
-        run: |
-          IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE_NAME:${{ env.VERSION }} .
-          docker push $IMAGE_NAME:${{ env.VERSION }}
-          docker save $IMAGE_NAME:${{ env.VERSION }} -o grug_base_${{ env.VERSION }}.tar
-
-      - name: Build and Push Grug Postgres Docker image
-        run: |
-          IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ env.VERSION }} .
-          docker push $IMAGE_NAME-postgres:${{ env.VERSION }}
-          docker save $IMAGE_NAME-postgres:${{ env.VERSION }} -o grug_postgres_${{ env.VERSION }}.tar
-
-      - name: Create GitHub Release
-        id: _release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ env.VERSION }}
-          body: ${{ github.event.head_commit.message }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Grug Base Docker image to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps._release.outputs.upload_url }}
-          asset_path: ./grug_base_${{ env.VERSION }}.tar
-          asset_name: grug_base_${{ env.VERSION }}.tar
-          asset_content_type: application/x-tar
-
-      - name: Upload Grug Postgres Docker image to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps._release.outputs.upload_url }}
-          asset_path: ./grug_postgres_${{ env.VERSION }}.tar
-          asset_name: grug_postgres_${{ env.VERSION }}.tar
-          asset_content_type: application/x-tar
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
