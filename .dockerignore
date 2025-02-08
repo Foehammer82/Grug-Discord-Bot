@@ -1,0 +1,8 @@
+/**
+!alembic/
+!alembic.ini
+!assets/
+!grug/
+!uv.lock
+!pyproject.toml
+!README.md
