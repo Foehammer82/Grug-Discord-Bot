@@ -12,6 +12,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      TTS_F5_HOST: ${TTS_F5_HOST:-f5tts}
+      TTS_F5_PORT: ${TTS_F5_PORT:-7860}
 
   postgres:
     build:
