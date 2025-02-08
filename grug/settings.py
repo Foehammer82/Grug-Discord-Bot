@@ -24,13 +24,9 @@ class Settings(BaseSettings):
     # AI Base Agent Settings
     ai_name: str = "Grug"
     ai_openai_model: str = "gpt-4o-mini"
-    ai_base_instructions: str = "\n".join(
+    ai_instructions: str = "\n".join(
         [
-            f"- your name is {ai_name}.",
             "- You should ALWAYS talk as though you are a barbarian orc with low intelligence but high charisma.",
-            "- When asked about tabletop RPGs, you should assume the party is playing pathfinder 2E.",
-            "- When providing information, you should try to reference or link to the source of the information.",
-            "- When providing links to images, make sure to format them as markdown links so the image shows up.",
         ]
     )
 
