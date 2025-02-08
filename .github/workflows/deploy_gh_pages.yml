@@ -1,4 +1,7 @@
 name: Deploy GitHub Pages
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -6,11 +9,14 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
 
-permissions:
-  contents: write
+
 # TODO: should tag and release with no build when docs changes, bumping the release version
 jobs:
+  tag_and_release:
+    uses: ./.github/workflows/tag_and_release.yml
+
   deploy:
     runs-on: ubuntu-latest
     steps:
@@ -19,9 +25,6 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
@@ -29,6 +32,7 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
+      # https://github.com/astral-sh/setup-uv
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -36,4 +40,5 @@ jobs:
           enable-cache: true
       - name: Install the project
         run: uv sync --only-group docs
+      - run: uv run mike delete --all # Run once to clean up the existing docs branch
       - run: uv run mkdocs gh-deploy --force

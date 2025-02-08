@@ -1,4 +1,6 @@
-name: PR Checks
+name: Run Tests
+permissions:
+  contents: read
 
 on:
   pull_request:
