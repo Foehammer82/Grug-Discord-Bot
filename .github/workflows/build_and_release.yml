@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/pr_checks.yml#pre-commit
+    uses: ./.github/workflows/pr_checks.yml
 
   tag-and-release:
     needs: [test]
