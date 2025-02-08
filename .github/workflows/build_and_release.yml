@@ -6,7 +6,11 @@ on:
       - main
 
 jobs:
+  test:
+    uses: ./.github/workflows/pr_checks.yml#pre-commit
+
   tag-and-release:
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -40,7 +44,7 @@ jobs:
         run: |
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
           docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ steps.tag_version.outputs.new_tag }} -t latest .
-          docker push -a $IMAGE_NAME-postgres:latest
+          docker push -a $IMAGE_NAME-postgres
 
       - name: Create a GitHub release
         id: _release
