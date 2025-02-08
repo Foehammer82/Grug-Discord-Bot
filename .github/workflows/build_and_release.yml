@@ -68,6 +68,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps._release.outputs.upload_url }}
-          asset_path: ./grug_base_${{ steps.tag_version.outputs.new_tag }}.tar
-          asset_name: grug_base_${{ steps.tag_version.outputs.new_tag }}.tar
+          asset_path: ./grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
+          asset_name: grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
           asset_content_type: application/x-tar
