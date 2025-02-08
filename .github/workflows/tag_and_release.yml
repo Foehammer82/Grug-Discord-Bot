@@ -1,7 +1,6 @@
 name: Tag and Release
 permissions:
   contents: write
-  deployments: write
 
 on:
   workflow_call:
