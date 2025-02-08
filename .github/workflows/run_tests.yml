@@ -4,6 +4,11 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'grug/**'
+      - 'tests/**'
   workflow_call:
 
 jobs:

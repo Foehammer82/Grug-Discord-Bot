@@ -1,16 +1,22 @@
 name: Build and Push Docker Image
 
+# TODO, look into splitting up the build and the tag_and_release into two jobs
+
 on:
   push:
     branches:
       - main
+    paths:
+      - 'Dockerfile'
+      - 'postgres.Dockerfile'
+      - 'grug/**'
 
 jobs:
   test:
-    uses: ./.github/workflows/pr_checks.yml
+    uses: ./.github/workflows/run_tests.yml
 
   tag-and-release:
-    needs: [test]
+    needs: [ test ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,6 +32,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # https://github.com/marketplace/actions/github-tag
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -46,6 +53,7 @@ jobs:
           docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ steps.tag_version.outputs.new_tag }} -t latest .
           docker push -a $IMAGE_NAME-postgres
 
+      # https://github.com/ncipollo/release-action
       - name: Create a GitHub release
         id: _release
         uses: ncipollo/release-action@v1
