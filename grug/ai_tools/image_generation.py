@@ -12,8 +12,8 @@ from grug.models import DalleImageRequest
 from grug.settings import settings
 
 
-@tool
-async def generate_ai_image(prompt: str) -> dict[str, str | int] | None:
+@tool(parse_docstring=True)
+async def generate_ai_image(prompt: str) -> dict[str, str | int]:
     """
     Generate an image using OpenAI's DALL-E model, and returns a URL to the generated image.
 
@@ -27,7 +27,13 @@ async def generate_ai_image(prompt: str) -> dict[str, str | int] | None:
             - size (str): The size of the generated image.
             - image_generations_left_today (Optional(int)): The number of image generations left today, based on the app's
               settings, and Grugs wallet.
-        None: If the image generation limit has been exceeded or if the assistant is not available.
+
+    Raises:
+        ValueError: If the AI image generation is disabled, the daily image generation limit has been exceeded, or if the
+            `OPENAI_API_KEY` environment variable is not set.
+
+    Notes:
+        - When providing links to images, make sure to format them as Markdown links so the image shows up.
     """
     # Notes:
     #   - as of 6/9/2024, it costs $0.04 per dall-e-3 image, and $0.02 per dall-e-2 image

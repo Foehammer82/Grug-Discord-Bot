@@ -3,7 +3,7 @@ import random
 from langchain_core.tools import tool
 
 
-@tool
+@tool(parse_docstring=True)
 def roll_dice(number_of_dice: int, sides_of_dice: int) -> tuple[list[int], int]:
     """
     Roll a number of dice with a certain number of sides.
