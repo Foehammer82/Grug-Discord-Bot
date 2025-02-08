@@ -1,0 +1,67 @@
+name: Publish Images
+permissions:
+  contents: write
+  packages: write
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - 'postgres.Dockerfile'
+      - 'grug/**'
+      - 'tests/**'
+      - 'assets/**'
+      - 'alembic/**'
+      - '.github/workflows/publish_images.yml'
+
+jobs:
+  test:
+    uses: ./.github/workflows/run_tests.yml
+
+  tag_and_release:
+    needs: [ test ]
+    uses: ./.github/workflows/tag_and_release.yml
+
+  publish_image:
+    needs:
+      - test
+      - tag_and_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push App Image
+        run: |
+          IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMAGE_NAME:${{ needs.tag_and_release.outputs.new_tag }} -t latest .
+          docker push -a $IMAGE_NAME
+          docker save $IMAGE_NAME:${{ needs.tag_and_release.outputs.new_tag }} -o grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
+
+      - name: Build and Push Postgres Image
+        run: |
+          IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ needs.tag_and_release.outputs.new_tag }} -t latest .
+          docker push -a $IMAGE_NAME-postgres
+
+      - name: Upload App Image to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.tag_and_release.outputs.upload_url }}
+          asset_path: ./grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
+          asset_name: grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
+          asset_content_type: application/x-tar
