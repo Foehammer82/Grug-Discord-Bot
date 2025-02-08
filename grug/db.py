@@ -19,10 +19,12 @@ async_engine = create_async_engine(
     url=settings.postgres_dsn,
     echo=False,
     future=True,
+    pool_size=10,
+    max_overflow=20,
 )
 
 # Database session factory singleton
-get_async_session = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
+async_session_factory = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 def init_db():
