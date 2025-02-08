@@ -10,6 +10,9 @@ on:
       - 'Dockerfile'
       - 'postgres.Dockerfile'
       - 'grug/**'
+      - 'tests/**'
+      - 'assets/**'
+      - 'alembic/**'
 
 jobs:
   test:
