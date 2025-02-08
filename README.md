@@ -1,19 +1,19 @@
 <p align="center">
-  <a href="./"><img src="./docs/assets/grug.png" alt="Grug Bot" width="200"></a>
+  <a href="./"><img src="./docs/assets/grug.png" alt="Grug" width="200"></a>
 </p>
 
-# Grug Discord Bot
+# Grug Discord Agent
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/python/mypy)
 
-Grug is a self-hostable tabletop-RPG GenAI bot designed to enhance your RPG experience by providing intelligent
+Grug is a self-hostable tabletop-RPG GenAI Agent designed to enhance your RPG experience by providing intelligent
 responses and interactions.
 
 ## Features
 
-- **Text Responses**: Can respond in discord chats when users @mention the bot, or when DM'd.
+- **Text Responses**: Can respond in discord chats when users @mention the agent, or when DM'd.
 - **Listens In Voice Chat**: Listens to voice chat and responds intelligently.
 
 ## Adding Grug to Your Server

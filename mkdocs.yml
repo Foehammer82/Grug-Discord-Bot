@@ -1,6 +1,7 @@
 site_name: Grug Discord Bot
-repo_url: https://github.com/drk-wtr/Grug
-repo_name: drk-wtr/Grug
+site_url: https://foehammer82.github.io/Grug-Discord-Bot/
+repo_url: https://github.com/Foehammer82/Grug-Discord-Agent
+repo_name: Foehammer82/Grug-Discord-Agent
 
 theme:
   name: material
