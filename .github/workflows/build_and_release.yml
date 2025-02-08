@@ -13,6 +13,7 @@ on:
       - 'tests/**'
       - 'assets/**'
       - 'alembic/**'
+      - '.github/workflows/build_and_release.yml'
 
 jobs:
   test:
@@ -48,7 +49,7 @@ jobs:
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
           docker build -t $IMAGE_NAME:${{ steps.tag_version.outputs.new_tag }} -t latest .
           docker push -a $IMAGE_NAME
-          docker save $IMAGE_NAME:${{ steps.tag_version.outputs.new_tag }} -o grug_base_${{ steps.tag_version.outputs.new_tag }}.tar
+          docker save $IMAGE_NAME:${{ steps.tag_version.outputs.new_tag }} -o grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
 
       - name: Build and Push Grug Postgres Docker image
         run: |
