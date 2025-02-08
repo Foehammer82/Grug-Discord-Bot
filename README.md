@@ -31,7 +31,7 @@ TODO: instructions for how to self-host
 - [ ] rules lookup
     - users must upload their own rulebooks and content as that is typically closed source
     - some tools will be provided out of the box, such as AoN for Pathfinder, and
-    - onlines resources that are open for use:
+    - online resources that are open for use:
         - https://media.wizards.com/2018/dnd/downloads/DnD_BasicRules_2018.pdf
         - AoN for Pathfinder
 - [x] dice roller
@@ -46,6 +46,17 @@ TODO: instructions for how to self-host
     - [ ] ability to send reminder for who is bringing food
     - [ ] scheduling feature for when the next session will be, and who is available (find a time that works best for
       everyone)
+
+## Local Development
+
+### Documentation
+
+We use MkDocs Material published to GitHub Pages for our documentation. We use [Mike]() to handle documentation
+versioning which comes with a few different commands when serving the docs locally, i.e:
+
+```bash
+uv run mike serve
+```
 
 ## References
 
