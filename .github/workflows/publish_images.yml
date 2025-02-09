@@ -86,3 +86,7 @@ jobs:
           asset_path: ./grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
           asset_name: grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
           asset_content_type: application/x-tar
+
+  update_docs:
+    uses: ./.github/workflows/deploy_gh_pages.yml
+    needs: [ publish_image ]

@@ -10,10 +10,7 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
-  workflow_run:
-    workflows: ["Publish Images"]
-    types:
-      - completed
+  workflow_call:
 
 
 jobs:
