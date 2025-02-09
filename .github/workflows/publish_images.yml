@@ -7,27 +7,31 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'Dockerfile'
-      - 'postgres.Dockerfile'
-      - 'grug/**'
-      - 'tests/**'
-      - 'assets/**'
-      - 'alembic/**'
-      - '.github/workflows/publish_images.yml'
+#    paths:
+#      - 'Dockerfile'
+#      - 'postgres.Dockerfile'
+#      - 'grug/**'
+#      - 'tests/**'
+#      - 'assets/**'
+#      - 'alembic/**'
 
 jobs:
-  test:
-    uses: ./.github/workflows/run_tests.yml
-
-  tag_and_release:
-    needs: [ test ]
-    uses: ./.github/workflows/tag_and_release.yml
+  pre-commit-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files
 
   publish_image:
-    needs:
-      - test
-      - tag_and_release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -43,17 +47,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # https://github.com/marketplace/actions/github-tag
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: ""
+
+      # https://github.com/ncipollo/release-action
+      - name: Create a GitHub release
+        id: release
+        uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+
       - name: Build and Push App Image
         run: |
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE_NAME:${{ needs.tag_and_release.outputs.new_tag }} -t latest .
+          docker build -t $IMAGE_NAME:${{ steps.tag_version.outputs.new_tag }} -t latest .
           docker push -a $IMAGE_NAME
-          docker save $IMAGE_NAME:${{ needs.tag_and_release.outputs.new_tag }} -o grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
+          docker save $IMAGE_NAME:${{ steps.tag_version.outputs.new_tag }} -o grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
 
       - name: Build and Push Postgres Image
         run: |
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ needs.tag_and_release.outputs.new_tag }} -t latest .
+          docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ steps.tag_version.outputs.new_tag }} -t latest .
           docker push -a $IMAGE_NAME-postgres
 
       - name: Upload App Image to Release
@@ -61,7 +82,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.tag_and_release.outputs.upload_url }}
-          asset_path: ./grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
-          asset_name: grug_image_${{ needs.tag_and_release.outputs.new_tag }}.tar
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
+          asset_name: grug_image_${{ steps.tag_version.outputs.new_tag }}.tar
           asset_content_type: application/x-tar
