@@ -7,13 +7,13 @@ on:
   push:
     branches:
       - main
-#    paths:
-#      - 'Dockerfile'
-#      - 'postgres.Dockerfile'
-#      - 'grug/**'
-#      - 'tests/**'
-#      - 'assets/**'
-#      - 'alembic/**'
+    paths:
+      - 'Dockerfile'
+      - 'postgres.Dockerfile'
+      - 'grug/**'
+      - 'tests/**'
+      - 'assets/**'
+      - 'alembic/**'
 
 jobs:
   pre-commit-check:
@@ -55,15 +55,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_prefix: ""
 
-      # https://github.com/ncipollo/release-action
-      - name: Create a GitHub release
-        id: release
-        uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
-
       - name: Build and Push App Image
         run: |
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
@@ -76,6 +67,15 @@ jobs:
           IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')
           docker build -f postgres.Dockerfile -t $IMAGE_NAME-postgres:${{ steps.tag_version.outputs.new_tag }} -t latest .
           docker push -a $IMAGE_NAME-postgres
+
+      # https://github.com/ncipollo/release-action
+      - name: Create a GitHub release
+        id: release
+        uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
 
       - name: Upload App Image to Release
         uses: actions/upload-release-asset@v1
