@@ -41,7 +41,7 @@ jobs:
             mkdocs-material-
       # https://github.com/astral-sh/setup-uv
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 #v5
         with:
           version: "0.5.24"
           enable-cache: true
