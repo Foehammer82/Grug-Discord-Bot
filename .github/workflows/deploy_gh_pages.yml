@@ -7,9 +7,14 @@ on:
     branches:
       - master
       - main
-#    paths:
-#      - 'docs/**'
-#      - 'mkdocs.yml'
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+  workflow_run:
+    workflows: ["Publish Images"]
+    types:
+      - completed
+
 
 jobs:
   deploy:
@@ -49,4 +54,3 @@ jobs:
         run: |
           uv run mike deploy --push --update-aliases ${{ steps.tag_version.outputs.previous_tag  }} latest
           uv run mike set-default --push latest
-#        run: uv run mkdocs gh-deploy --force
