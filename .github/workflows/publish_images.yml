@@ -7,13 +7,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'Dockerfile'
-      - 'postgres.Dockerfile'
-      - 'grug/**'
-      - 'tests/**'
-      - 'assets/**'
-      - 'alembic/**'
+#    paths:
+#      - 'Dockerfile'
+#      - 'postgres.Dockerfile'
+#      - 'grug/**'
+#      - 'tests/**'
+#      - 'assets/**'
+#      - 'alembic/**'
 
 jobs:
   pre-commit-check:
