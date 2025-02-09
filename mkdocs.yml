@@ -7,6 +7,8 @@ repo_url: https://github.com/Foehammer82/Grug-Discord-Agent
 repo_name: Foehammer82/Grug-Discord-Agent
 edit_uri: ""
 
+# TODO: setup versioning with mike if possible
+
 theme:
   name: material
   custom_dir: overrides
