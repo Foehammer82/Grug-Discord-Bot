@@ -7,20 +7,20 @@ on:
     branches:
       - master
       - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
+#    paths:
+#      - 'docs/**'
+#      - 'mkdocs.yml'
 
 
 # TODO: should tag and release with no build when docs changes, bumping the release version
 jobs:
-  tag_and_release:
-    uses: ./.github/workflows/tag_and_release.yml
-
   deploy:
     runs-on: ubuntu-latest
-    needs: [ tag_and_release ]
     steps:
+      - name: GitHub Tag Name example
+        run: |
+          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "Tag name from github.ref_name: ${{  github.ref_name }}"
       - uses: actions/checkout@v4
       - name: Configure Git Credentials
         run: |
@@ -42,4 +42,4 @@ jobs:
       - name: Install Dependencies
         run: uv sync
       - name: Deploy to GitHub Pages
-        run: uv run mike deploy --push --update-aliases ${{ needs.tag_and_release.outputs.new_tag }} latest
+        run: uv run mike deploy --push --update-aliases latest
